@@ -45,3 +45,23 @@ fn to_le_bytes(hi: Field, lo: Field) -> [u8; 32]{
     }
     res
 }
+
+#[test]
+fn test_le_convert(){
+    let hi: Field = 48375715791;
+    let lo: Field = 49837711301;
+    let le_bytes = to_le_bytes(hi, lo);
+    let fields = from_le_bytes(le_bytes);
+    assert(fields[0] == hi);
+    assert(fields[1] == lo);
+}
+
+#[test]
+fn test_be_convert(){
+    let hi: Field = 48375715791;
+    let lo: Field = 49837711301;
+    let le_bytes = to_be_bytes(hi, lo);
+    let fields = from_be_bytes(le_bytes);
+    assert(fields[0] == hi);
+    assert(fields[1] == lo);
+}
