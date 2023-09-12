@@ -1,0 +1,13 @@
+export const FINALIZED_ROOT_DEPTH = 6;
+export const FINALIZED_ROOT_INDEX = 41;
+export const NEXT_SYNC_COMMITTEE_DEPTH = 5;
+export const NEXT_SYNC_COMMITTEE_INDEX = 23;
+export const DOMAIN_SYNC_COMMITTEE = [7, 0, 0, 0];
+export const GENESIS_SLOT = 0;
+export const MIN_SYNC_COMMITTEE_PARTICIPANTS = 1;
+export const SLOTS_PER_EPOCH = 32;
+export const SYNC_COMMITTEES_DEPTH = 4;
+export const SYNC_COMMITTEES_INDEX = 11;
+export const SYNC_COMMITTEE_SIZE = 512;
+export const EXECUTION_PAYLOAD_DEPTH = 4;
+export const EXECUTION_PAYLOAD_INDEX = 9;
