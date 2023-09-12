@@ -6,7 +6,7 @@ export const LC_UPDATE_ROUTE = "eth/v1/beacon/light_client/updates";
 export const GENESIS_ROUTE = "eth/v1/beacon/genesis";
 export async function downloadLCUpdates(
   startPeriod: number,
-  count: number,
+  count: number = 128,
   serverURL = DEFAULT_SERVER_URL
 ) {
   return await axios.get(

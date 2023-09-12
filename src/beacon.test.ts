@@ -1,21 +1,27 @@
 import {} from "./converter/index.js";
 import { expect } from "chai";
-import { BeaconHeaderObject, SyncCommitteeObject } from "./index.js";
+import {
+  BeaconHeaderObject,
+  ExecutionPayloadHeaderObject,
+  SyncCommitteeObject,
+} from "./index.js";
 import BeaconHeader from "./types/beacon-header.js";
 import Field from "./types/field.js";
 import {
+  EXECUTION_PAYLOAD_INDEX,
   FINALIZED_ROOT_INDEX,
   NEXT_SYNC_COMMITTEE_INDEX,
 } from "./constants/index.js";
 import hashMerkleBranch from "./hash/hash-merkle-brach.js";
 import SyncCommittee from "./types/sync-committee.js";
 import { downloadLCUpdates } from "./beacon-api/index.js";
+import executionHashTreeRoot from "./hash/hash-execution.js";
 
 describe("test beacon api", () => {
   let res: any;
 
   before("download lc updates", async () => {
-    res = await downloadLCUpdates(80, 128);
+    res = await downloadLCUpdates(700);
   });
   it("test hashing a beacon header", async () => {
     const update = res.data[0];
@@ -24,7 +30,7 @@ describe("test beacon api", () => {
     const beacon = new BeaconHeader(beaconObj);
 
     expect(beacon.hashTreeRoot.ssz).to.be.equal(
-      "0xa6e43e4a6a8b7a5deb2c957253e6bdc903303922b798168d45e6c183047f2197"
+      "0x20924411d7e9945ad9ffde97ca1748f91b26bbdafb15d1779e8786c624345f97"
     );
   });
   it("validate the finality root of an LC update", async () => {
@@ -63,7 +69,7 @@ describe("test beacon api", () => {
     const nextSyncCommittee = new SyncCommittee(nextSyncCommitteeObj);
 
     expect(nextSyncCommittee.aggregateKey.hashTreeRoot.ssz).to.be.equal(
-      "0x63fa893ff0f8e1f011f5ba7e07f7540ebc828664c7cbe19a845b4465c07802a7"
+      "0x66539f25a936c2f589f6454ad01e4ef663c0d40fc54e4232adfbe69b885796f3"
     );
     const nextSyncCommitteeRoot = nextSyncCommittee.hashTreeRoot;
 
@@ -77,5 +83,31 @@ describe("test beacon api", () => {
       index
     );
     expect(attestedBeacon.stateRoot.ssz).to.be.equal(expectedStateRoot.ssz);
+  });
+  it("validate capella lc header", async () => {
+    const update = res.data[0];
+    expect(update.version).to.be.equal("capella");
+    const attestedHeader = update.data.attested_header;
+
+    const executionObj =
+      attestedHeader.execution as ExecutionPayloadHeaderObject;
+
+    const executionRoot = executionHashTreeRoot(executionObj);
+    expect(executionRoot.ssz).to.be.equal(
+      "0x0d22cf1eac3f229b478d13e8c7d3b6cdcc83299788419b29f27b663233ae67ed"
+    );
+
+    const executionBranch = attestedHeader.execution_branch.map((ssz: string) =>
+      Field.fromSSZ(ssz)
+    );
+
+    const index = Field.fromBigInt(BigInt(EXECUTION_PAYLOAD_INDEX));
+
+    const expectedBodyRoot = hashMerkleBranch(
+      executionRoot,
+      executionBranch,
+      index
+    );
+    expect(attestedHeader.beacon.body_root).to.be.equal(expectedBodyRoot.ssz);
   });
 });
