@@ -1,0 +1,8 @@
+[package]
+name = "compute_signing_root"
+type = "bin"
+authors = [""]
+compiler_version = "0.11.1"
+
+[dependencies]
+noirlib={path = "../../noirlib"}

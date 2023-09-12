@@ -29,6 +29,7 @@ export default class Field {
     return Field.fromLEBytes(leBytes);
   }
 
+
   static fromSSZ(ssz: string) {
     let value = [];
 
