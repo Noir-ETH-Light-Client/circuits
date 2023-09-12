@@ -25,10 +25,4 @@ describe("test field functions", () => {
       expect(expectedLEBytes[i]).to.be.equal(leBytes[i]);
     }
   });
-
-  it("should convert correctly to the Uint8Array form", () => {
-    let field = new Field(BigInt("48739874932483429"));
-    let expectedField = Field.fromUint8Array(field.uint8Array);
-    expect(field.valueOf === expectedField.valueOf).to.be.true;
-  });
 });
