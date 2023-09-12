@@ -1,6 +1,7 @@
 mod bits_sum;
 mod compute_domain;
 mod compute_signing_root;
+mod hash_aggregated_key;
 mod hash_tree_root;
 mod is_branch_not_empty;
 mod is_valid_lc_header;
