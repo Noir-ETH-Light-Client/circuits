@@ -1,0 +1,4 @@
+DOMAIN_SYNC_COMMITTEE = ["", "", "", ""]
+GENESIS_VALIDATORS_ROOT = ["", ""]
+expected_res = ["", ""]
+fork_version = ["", "", "", ""]
