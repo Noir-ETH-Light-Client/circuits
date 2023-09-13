@@ -8,6 +8,7 @@ mod is_valid_lc_header;
 mod is_valid_merkle_branch;
 mod is_zeroed_header;
 mod is_zeroed_sync_committee;
+mod sync_commitee_hash_tree_root;
 mod validate_lc_update;
 mod utils;
 mod bytes_repr;
