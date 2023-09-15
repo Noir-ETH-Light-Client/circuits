@@ -54,8 +54,9 @@ export default class LightClientUpdate {
     this._finalityBranch = finalityBranch.map((node) => Field.fromSSZ(node));
     this._syncCommitteeBits = VariableLengthField.fromSSZ(
       syncCommitteeBits,
-      SYNC_COMMITTEE_SIZE
+      SYNC_COMMITTEE_SIZE / 8
     );
+    
     this._syncCommitteeSignature = BLSSignature.fromSSZ(syncCommitteeSignature);
   }
 
