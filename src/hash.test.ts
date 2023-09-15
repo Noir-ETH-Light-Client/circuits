@@ -1,10 +1,10 @@
 import hashTwo from "./hash/hash-two.js";
-import Field from "./types/field.js";
+import Field from "./types/primitives/field.js";
 import hashTwoCircuit from "./circuits/tests/hash_two/target/hash_two.json" assert { type: "json" };
 import sha256Circuit from "./circuits/tests/sha256/target/sha256.json" assert { type: "json" };
 import hashTreeRootCircuit from "./circuits/tests/hash_tree_root/target/hash_tree_root.json" assert { type: "json" };
 import merkleBranchCircuit from "./circuits/tests/merkle_branch/target/merkle_branch.json" assert { type: "json" };
-import { convertToHexAndPad, leBytesToUint8Array } from "./converter/index.js";
+import { convertToHexAndPad, leBytesToUint8Array } from "./converter/numeric.js";
 import { validateWitness } from "./berretenberg-api/index.js";
 import { expect } from "chai";
 import { sha256 } from "js-sha256";
@@ -31,8 +31,8 @@ describe("test hash functions", () => {
     expect(verified).to.be.true;
   });
   it("test hashTwo function", async () => {
-    let x = new Field(BigInt("943981741707232874"));
-    let y = new Field(BigInt("347109843729721111"));
+    let x = Field.fromBigInt(BigInt("943981741707232874"));
+    let y = Field.fromBigInt(BigInt("347109843729721111"));
     let hash = hashTwo(x, y);
 
     let xHiLo = x.hilo;
@@ -48,11 +48,11 @@ describe("test hash functions", () => {
     expect(verified).to.be.true;
   });
   it("test hashTreeRoot function", async () => {
-    let x0 = new Field(BigInt("943981741707232874"));
-    let x1 = new Field(BigInt("943981741707232875"));
-    let x2 = new Field(BigInt("943981741707232876"));
-    let x3 = new Field(BigInt("943981741707232877"));
-    let x4 = new Field(BigInt("943981741707232878"));
+    let x0 = Field.fromBigInt(BigInt("943981741707232874"));
+    let x1 = Field.fromBigInt(BigInt("943981741707232875"));
+    let x2 = Field.fromBigInt(BigInt("943981741707232876"));
+    let x3 = Field.fromBigInt(BigInt("943981741707232877"));
+    let x4 = Field.fromBigInt(BigInt("943981741707232878"));
     let leaves = [x0, x1, x2, x3, x4];
     let treeRoot = hashTreeRoot(leaves);
 
@@ -76,12 +76,13 @@ describe("test hash functions", () => {
     expect(verified).to.be.true;
   });
   it("test hash merkle branch", async () => {
-    let leaf = new Field(BigInt("849314791791"));
-    let branch = [new Field(BigInt("483989411114343"))];
-    for (let i = 1; i < 8; i++) {
-      branch[i] = branch[i - 1].add(1n);
+    let leaf = Field.fromBigInt(BigInt("849314791791"));
+    let x = BigInt("483989411114343");
+    let branch = new Array<Field>(8);
+    for (let i = 0; i < 8; i++) {
+      branch[i] = Field.fromBigInt(x + BigInt(i));
     }
-    let index = new Field(BigInt(134));
+    let index = Field.fromBigInt(BigInt(134));
     let root = hashMerkleBranch(leaf, branch, index);
 
     let his: BigInt[] = [];
@@ -91,7 +92,7 @@ describe("test hash functions", () => {
       his.push(hilo[0]);
       los.push(hilo[1]);
     });
-    let inputs = [...root.hilo, ...leaf.hilo, index.valueOf, ...his, ...los];
+    let inputs = [...root.hilo, ...leaf.hilo, index.bigInt, ...his, ...los];
     const witness = new Map<number, string>();
     inputs.forEach((input, index) => {
       witness.set(index + 1, convertToHexAndPad(input));

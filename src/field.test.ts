@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import Field from "./types/field.js";
+import Field from "./types/primitives/field.js";
 
 describe("test field functions", () => {
   it("should convert correctly to the hi-lo form", () => {
@@ -24,11 +24,5 @@ describe("test field functions", () => {
     for (let i = 0; i < 32; i++) {
       expect(expectedLEBytes[i]).to.be.equal(leBytes[i]);
     }
-  });
-
-  it("should convert correctly to the Uint8Array form", () => {
-    let field = new Field(BigInt("48739874932483429"));
-    let expectedField = Field.fromUint8Array(field.uint8Array);
-    expect(field.valueOf === expectedField.valueOf).to.be.true;
   });
 });

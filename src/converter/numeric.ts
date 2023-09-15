@@ -9,7 +9,7 @@ export function uint8ArrayToBigInt(uint8Array: Uint8Array): BigInt {
   return result;
 }
 
-export function fieldToLEBytes(field: BigInt) {
+export function bigIntToLEBytes(field: BigInt) {
   let curField = BigInt(field.valueOf());
 
   let leBytes = new Array<BigInt>(32);
@@ -20,7 +20,7 @@ export function fieldToLEBytes(field: BigInt) {
   return leBytes;
 }
 
-export function leBytesToField(leBytes: Array<BigInt>) {
+export function leBytesToBigInt(leBytes: Array<BigInt>) {
   let bytes = [...leBytes];
   if (bytes.length < 32) {
     for (let i = bytes.length; i < 32; i++) {
@@ -36,13 +36,13 @@ export function leBytesToField(leBytes: Array<BigInt>) {
   return field;
 }
 
-export function fieldToHilo(field: BigInt) {
+export function bigIntToHilo(field: BigInt) {
   let hi = BigInt(field.valueOf() >> 128n);
   let lo = BigInt(field.valueOf() - (hi.valueOf() << 128n));
   return [hi, lo];
 }
 
-export function hiloToField(hi: BigInt, lo: BigInt) {
+export function hiloToBigInt(hi: BigInt, lo: BigInt) {
   return BigInt((hi.valueOf() << 128n) + lo.valueOf());
 }
 
@@ -65,13 +65,13 @@ export function convertToHexAndPad(val: any) {
   return `0x${"0".repeat(64 - res.length)}${res}`;
 }
 
-export function fieldToLEBits(x: BigInt): Array<boolean> {
-  let bits = new Array();
-  let curX = x.valueOf();
-  while (curX > 0) {
-    let bit = curX % 2n;
-    bits.push(bit === 1n);
-    curX >>= 1n;
+export function byteToBits(byte: number) {
+  let res: boolean[] = new Array();
+  let curByte = byte;
+  for (let i = 0; i < 8; i++) {
+    let bit = curByte % 2;
+    res.push(bit === 1);
+    curByte >>= 1;
   }
-  return bits;
+  return res;
 }

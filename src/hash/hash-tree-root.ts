@@ -1,4 +1,4 @@
-import Field from "../types/field.js";
+import Field from "../types/primitives/field.js";
 import hashTwo from "./hash-two.js";
 
 function nextPowerOfTwo(num: number): number {
