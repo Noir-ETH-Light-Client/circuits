@@ -6,7 +6,7 @@ import {
   leBytesToBigInt,
   leBytesToUint8Array,
   uint8ArrayToLeBytes,
-} from "../converter/index.js";
+} from "../../converter/numeric.js";
 
 export default class Field {
   private _value: Uint8Array;
@@ -81,5 +81,11 @@ export default class Field {
 
   clone() {
     return new Field(this._value);
+  }
+
+  isEqual(other: Field) {
+    for (let i = 0; i < 32; i++)
+      if (this._value[i] !== other.value[i]) return false;
+    return true;
   }
 }

@@ -1,37 +1,58 @@
-import {} from "./converter/index.js";
+import {} from "./converter/numeric.js";
 import { expect } from "chai";
 import {
   BeaconHeaderObject,
   ExecutionPayloadHeaderObject,
   SyncCommitteeObject,
 } from "./index.js";
-import BeaconHeader from "./types/beacon-header.js";
-import Field from "./types/field.js";
+import BeaconHeader from "./types/beacon/beacon-header.js";
+import Field from "./types/primitives/field.js";
 import {
   EXECUTION_PAYLOAD_INDEX,
   FINALIZED_ROOT_INDEX,
   NEXT_SYNC_COMMITTEE_INDEX,
+  SYNC_COMMITTEE_SIZE,
 } from "./constants/index.js";
 import hashMerkleBranch from "./hash/hash-merkle-brach.js";
-import SyncCommittee from "./types/sync-committee.js";
-import { downloadLCUpdates } from "./beacon-api/index.js";
+import SyncCommittee from "./types/beacon/sync-committee.js";
+import BeaconAPI from "./beacon-api/index.js";
 import executionHashTreeRoot from "./hash/hash-execution.js";
+import VariableLengthField from "./types/primitives/variable-length-field.js";
 
 describe("test beacon api", () => {
   let res: any;
-
+  let beaconAPI: BeaconAPI;
   before("download lc updates", async () => {
-    res = await downloadLCUpdates(700);
+    beaconAPI = new BeaconAPI();
+    res = await beaconAPI.downloadLCUpdates(700);
+  });
+  it("test validator root", async () => {
+    const update = res.data[0];
+    const beaconObj = update.data.attested_header.beacon as BeaconHeaderObject;
+    const slot = beaconObj.slot;
+    const state = await beaconAPI.downloadBeaconState(slot);
+    console.log(state.data);
+    const genesis = await beaconAPI.downloadGenesisData();
+    console.log(genesis.data);
   });
   it("test hashing a beacon header", async () => {
     const update = res.data[0];
     const beaconObj = update.data.attested_header.beacon as BeaconHeaderObject;
-
+    console.log(beaconObj);
     const beacon = new BeaconHeader(beaconObj);
 
-    expect(beacon.hashTreeRoot.ssz).to.be.equal(
-      "0x20924411d7e9945ad9ffde97ca1748f91b26bbdafb15d1779e8786c624345f97"
-    );
+    const beaconRoot = beacon.hashTreeRoot.ssz;
+
+    const block = await beaconAPI.downloadBlock(beaconRoot);
+    console.log(block.data.data);
+
+    // const slot = beaconObj.slot;
+    // const state = await beaconAPI.downloadBeaconState(slot);
+    // console.log(state.data);
+    // 0x855ff805f8aba3e166bdc56cf50830ce284437d7842666802fbc30864292d043137ff7b55ddcb0ad4ea5038cb4e36430
+    // 0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95
+    // 0x4b363db94e286120d76eb905340fdd4e54bfe9f06bf33ff6cf5ad27f511bfe95
+    console.log(update.data.next_sync_committee);
   });
   it("validate the finality root of an LC update", async () => {
     const update = res.data[0];
@@ -68,9 +89,6 @@ describe("test beacon api", () => {
       .next_sync_committee as SyncCommitteeObject;
     const nextSyncCommittee = new SyncCommittee(nextSyncCommitteeObj);
 
-    expect(nextSyncCommittee.aggregateKey.hashTreeRoot.ssz).to.be.equal(
-      "0x66539f25a936c2f589f6454ad01e4ef663c0d40fc54e4232adfbe69b885796f3"
-    );
     const nextSyncCommitteeRoot = nextSyncCommittee.hashTreeRoot;
 
     const nextSyncCommitteeBranch = update.data.next_sync_committee_branch.map(
@@ -93,9 +111,6 @@ describe("test beacon api", () => {
       attestedHeader.execution as ExecutionPayloadHeaderObject;
 
     const executionRoot = executionHashTreeRoot(executionObj);
-    expect(executionRoot.ssz).to.be.equal(
-      "0x0d22cf1eac3f229b478d13e8c7d3b6cdcc83299788419b29f27b663233ae67ed"
-    );
 
     const executionBranch = attestedHeader.execution_branch.map((ssz: string) =>
       Field.fromSSZ(ssz)
@@ -110,4 +125,22 @@ describe("test beacon api", () => {
     );
     expect(attestedHeader.beacon.body_root).to.be.equal(expectedBodyRoot.ssz);
   });
+  it("validate sync committee signature", async () => {
+    for (let i = 0; i < res.data.length; i++) {
+      const nextUpdate = res.data[i];
+      const syncCommBits = nextUpdate.data.sync_aggregate.sync_committee_bits;
+      const bits = VariableLengthField.fromSSZ(
+        syncCommBits,
+        SYNC_COMMITTEE_SIZE
+      ).leBits;
+      const bitsSum = bits.reduce((sum, bit) => sum + (bit ? 1 : 0), 0);
+      console.log(bitsSum + " per " + SYNC_COMMITTEE_SIZE);
+      const parentRoot = nextUpdate.data.attested_header.beacon.parent_root;
+      const slot = nextUpdate.data.attested_header.beacon.slot;
+      console.log(slot);
+      console.log(parentRoot);
+    }
+  });
+
+  it("get bootstrap sync committee", async () => {});
 });

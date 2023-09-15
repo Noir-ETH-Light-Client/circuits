@@ -5,7 +5,6 @@ export const NEXT_SYNC_COMMITTEE_INDEX = 23;
 export const DOMAIN_SYNC_COMMITTEE = [7, 0, 0, 0];
 export const GENESIS_SLOT = 0;
 export const MIN_SYNC_COMMITTEE_PARTICIPANTS = 1;
-export const SLOTS_PER_EPOCH = 32;
 export const SYNC_COMMITTEES_DEPTH = 4;
 export const SYNC_COMMITTEES_INDEX = 11;
 export const SYNC_COMMITTEE_SIZE = 512;
@@ -38,3 +37,7 @@ export const CAPELLA_FORK_EPOCH = 194048; // April 12 (epoch: 194048    slot: 62
 // DENEB
 export const DENEB_FORK_VERSION = 0x04000000;
 export const DENEB_FORK_EPOCH = Number.MAX_VALUE;
+
+export const SECONDS_PER_SLOT = 12;
+export const SLOTS_PER_EPOCH = 32;
+export const EPOCH_PER_PERIOD = 256;

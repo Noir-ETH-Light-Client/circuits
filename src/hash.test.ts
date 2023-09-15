@@ -1,10 +1,10 @@
 import hashTwo from "./hash/hash-two.js";
-import Field from "./types/field.js";
+import Field from "./types/primitives/field.js";
 import hashTwoCircuit from "./circuits/tests/hash_two/target/hash_two.json" assert { type: "json" };
 import sha256Circuit from "./circuits/tests/sha256/target/sha256.json" assert { type: "json" };
 import hashTreeRootCircuit from "./circuits/tests/hash_tree_root/target/hash_tree_root.json" assert { type: "json" };
 import merkleBranchCircuit from "./circuits/tests/merkle_branch/target/merkle_branch.json" assert { type: "json" };
-import { convertToHexAndPad, leBytesToUint8Array } from "./converter/index.js";
+import { convertToHexAndPad, leBytesToUint8Array } from "./converter/numeric.js";
 import { validateWitness } from "./berretenberg-api/index.js";
 import { expect } from "chai";
 import { sha256 } from "js-sha256";

@@ -1,5 +1,6 @@
-import hashTreeRoot from "../hash/hash-tree-root.js";
-import Field from "./field.js";
+import { PublicKey } from "@chainsafe/bls/types.js";
+import hashTreeRoot from "../../hash/hash-tree-root.js";
+import Field from "../primitives/field.js";
 
 export default class BLSPubKey {
   private _value: Uint8Array;
@@ -31,5 +32,9 @@ export default class BLSPubKey {
     const leaf0 = new Field(this._value.slice(0, 32));
     const leaf1 = new Field(this._value.slice(32));
     return hashTreeRoot([leaf0, leaf1]);
+  }
+
+  get chainsafePubkey() {
+    return PublicKey.fromBytes(this._value);
   }
 }
