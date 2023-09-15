@@ -1,6 +1,6 @@
-import hashTreeRoot from "../hash/hash-tree-root.js";
-import { BeaconHeaderObject } from "../index.js";
-import Field from "./field.js";
+import hashTreeRoot from "../../hash/hash-tree-root.js";
+import { BeaconHeaderObject } from "../../index.js";
+import Field from "../primitives/field.js";
 
 export default class BeaconHeader {
   private _slot: Field;
@@ -51,5 +51,10 @@ export default class BeaconHeader {
       this._stateRoot,
       this._bodyRoot,
     ]);
+  }
+
+  isZeroed() {
+    let zero = Field.zero();
+    return this._bodyRoot.isEqual(zero);
   }
 }

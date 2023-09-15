@@ -1,5 +1,5 @@
 import { sha256 } from "js-sha256";
-import Field from "../types/field.js";
+import Field from "../types/primitives/field.js";
 
 export default function hashTwo(input0: Field, input1: Field): Field {
   let hash = sha256.create();

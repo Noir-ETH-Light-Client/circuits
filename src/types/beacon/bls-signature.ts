@@ -1,5 +1,6 @@
-import hashTreeRoot from "../hash/hash-tree-root.js";
-import Field from "./field.js";
+import bls from "@chainsafe/bls";
+import hashTreeRoot from "../../hash/hash-tree-root.js";
+import Field from "../primitives/field.js";
 
 export default class BLSSignature {
   private _value: Uint8Array;
@@ -32,5 +33,9 @@ export default class BLSSignature {
     const leaf1 = new Field(this._value.slice(32, 64));
     const leaf2 = new Field(this._value.slice(64));
     return hashTreeRoot([leaf0, leaf1, leaf2]);
+  }
+
+  get chainsafeSignature() {
+    return bls.Signature.fromBytes(this._value);
   }
 }

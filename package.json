@@ -11,6 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "@aztec/bb.js": "^0.3.6",
+    "@chainsafe/bls": "^7.1.2",
+    "@lodestar/types": "^1.11.1",
     "@noir-lang/acvm_js": "git+https://git@github.com/noir-lang/acvm-simulator-wasm.git#b9d9ca9dfc5140839f23998d9466307215607c42",
     "axios": "^1.5.0",
     "fflate": "^0.8.0",

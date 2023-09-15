@@ -6,7 +6,7 @@ import {
   leBytesToBigInt,
   leBytesToUint8Array,
   uint8ArrayToLeBytes,
-} from "../converter/index.js";
+} from "../../converter/numeric.js";
 
 export default class Field {
   private _value: Uint8Array;
@@ -29,11 +29,12 @@ export default class Field {
     return Field.fromLEBytes(leBytes);
   }
 
-  static fromSSZ(ssz: string) {
+  static fromSSZ(ssz: string, length?: number) {
     let value = [];
 
-    let paddedSSZ = ssz.substring(2).padStart(64, "0");
-    for (let i = 0; i < 64; i += 2) {
+    const strLen = length ? length * 2 : 64;
+    let paddedSSZ = ssz.substring(2).padStart(strLen, "0");
+    for (let i = 0; i < strLen; i += 2) {
       let str = paddedSSZ.substring(i, i + 2);
       value.push(parseInt(str, 16));
     }
@@ -81,5 +82,11 @@ export default class Field {
 
   clone() {
     return new Field(this._value);
+  }
+
+  isEqual(other: Field) {
+    for (let i = 0; i < 32; i++)
+      if (this._value[i] !== other.value[i]) return false;
+    return true;
   }
 }
