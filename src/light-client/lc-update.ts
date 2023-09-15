@@ -1,4 +1,4 @@
-import hashMerkleBranch from "../../hash/hash-merkle-brach.js";
+import hashMerkleBranch from "../hash/hash-merkle-brach.js";
 import {
   FINALIZED_ROOT_DEPTH,
   FINALIZED_ROOT_INDEX,
@@ -6,25 +6,29 @@ import {
   NEXT_SYNC_COMMITTEE_DEPTH,
   NEXT_SYNC_COMMITTEE_INDEX,
   SYNC_COMMITTEE_SIZE,
-} from "../../constants/index.js";
+} from "../constants/index.js";
 import BLSSignature from "../beacon/bls-signature.js";
 import SyncCommittee from "../beacon/sync-committee.js";
 import Field from "../primitives/field.js";
 import VariableLengthField from "../primitives/variable-length-field.js";
 import LightClientHeader from "./lc-header.js";
-import { InvalidLCMessage, IsLCUpdateValid } from "../../index.js";
-import computeDomain from "../../domain/compute-domain.js";
-import hashTwo from "../../hash/hash-two.js";
+import {
+  InvalidLCMessage,
+  IsLCUpdateValid,
+  LightClientUpdateSummary,
+} from "../index.js";
+import computeDomain from "../domain/compute-domain.js";
+import hashTwo from "../hash/hash-two.js";
 
 export default class LightClientUpdate {
-  private _signatureSlot: Field;
-  private _attestedHeader: LightClientHeader;
-  private _nextSyncCommittee: SyncCommittee;
-  private _nextSyncCommitteeBranch: Array<Field>;
-  private _finalizedHeader: LightClientHeader;
-  private _finalityBranch: Array<Field>;
-  private _syncCommitteeBits: VariableLengthField;
-  private _syncCommitteeSignature: BLSSignature;
+  readonly signatureSlot: Field;
+  readonly attestedHeader: LightClientHeader;
+  readonly nextSyncCommittee: SyncCommittee;
+  readonly nextSyncCommitteeBranch: Array<Field>;
+  readonly finalizedHeader: LightClientHeader;
+  readonly finalityBranch: Array<Field>;
+  readonly syncCommitteeBits: VariableLengthField;
+  readonly syncCommitteeSignature: BLSSignature;
 
   constructor(
     signatureSlot: string,
@@ -44,20 +48,20 @@ export default class LightClientUpdate {
       throw new Error(
         `Expect the finality branch length to be ${FINALIZED_ROOT_DEPTH}, but got ${finalityBranch.length}`
       );
-    this._signatureSlot = Field.fromBigInt(BigInt(signatureSlot));
-    this._attestedHeader = attestedHeader;
-    this._nextSyncCommittee = nextSyncCommittee;
-    this._nextSyncCommitteeBranch = nextSyncCommitteeBranch.map((node) =>
+    this.signatureSlot = Field.fromBigInt(BigInt(signatureSlot));
+    this.attestedHeader = attestedHeader;
+    this.nextSyncCommittee = nextSyncCommittee;
+    this.nextSyncCommitteeBranch = nextSyncCommitteeBranch.map((node) =>
       Field.fromSSZ(node)
     );
-    this._finalizedHeader = finalizedHeader;
-    this._finalityBranch = finalityBranch.map((node) => Field.fromSSZ(node));
-    this._syncCommitteeBits = VariableLengthField.fromSSZ(
+    this.finalizedHeader = finalizedHeader;
+    this.finalityBranch = finalityBranch.map((node) => Field.fromSSZ(node));
+    this.syncCommitteeBits = VariableLengthField.fromSSZ(
       syncCommitteeBits,
       SYNC_COMMITTEE_SIZE / 8
     );
-    
-    this._syncCommitteeSignature = BLSSignature.fromSSZ(syncCommitteeSignature);
+
+    this.syncCommitteeSignature = BLSSignature.fromSSZ(syncCommitteeSignature);
   }
 
   static fromJSON(json: any) {
@@ -95,35 +99,35 @@ export default class LightClientUpdate {
 
   isFinalityUpdate() {
     const zero = Field.zero();
-    return !this._finalityBranch.every((node) => node.isEqual(zero));
+    return !this.finalityBranch.every((node) => node.isEqual(zero));
   }
   isSyncCommitteeUpdate() {
     const zero = Field.zero();
-    return !this._nextSyncCommitteeBranch.every((node) => node.isEqual(zero));
+    return !this.nextSyncCommitteeBranch.every((node) => node.isEqual(zero));
   }
 
   isValid(
     syncCommittee: SyncCommittee,
     genesisValidatorsRoot: Field
   ): IsLCUpdateValid {
-    if (this._syncCommitteeBits.sumBits < MIN_SYNC_COMMITTEE_PARTICIPANTS)
+    if (this.syncCommitteeBits.sumBits < MIN_SYNC_COMMITTEE_PARTICIPANTS)
       return {
         valid: false,
         msg: InvalidLCMessage.MIN_SYNC_COMMITTEE_PARTICIPANTS_NOT_MET,
       };
-    if (!this._attestedHeader.isValid())
+    if (!this.attestedHeader.isValid())
       return {
         valid: false,
         msg: InvalidLCMessage.INVALID_ATTESTED_HEADER,
       };
-    if (this._signatureSlot.bigInt <= this._attestedHeader.beacon.slot.bigInt)
+    if (this.signatureSlot.bigInt <= this.attestedHeader.beacon.slot.bigInt)
       return {
         valid: false,
         msg: InvalidLCMessage.SIGNATURE_SLOT_MUST_BE_AFTER_ATTESTED_SLOT,
       };
     if (
-      this._attestedHeader.beacon.slot.bigInt <
-      this._finalizedHeader.beacon.slot.bigInt
+      this.attestedHeader.beacon.slot.bigInt <
+      this.finalizedHeader.beacon.slot.bigInt
     )
       return {
         valid: false,
@@ -140,18 +144,18 @@ export default class LightClientUpdate {
         msg: InvalidLCMessage.INVALID_SYNC_COMMITTEE_UPDATE,
       };
     const domain = computeDomain(
-      Number(this._signatureSlot.bigInt) - 1,
+      Number(this.signatureSlot.bigInt) - 1,
       genesisValidatorsRoot
     );
     const signingRoot = hashTwo(
-      this._attestedHeader.beacon.hashTreeRoot,
+      this.attestedHeader.beacon.hashTreeRoot,
       domain
     );
     const aggregateKey = syncCommittee.getAggregateParticipantPubkeys(
-      this._syncCommitteeBits
+      this.syncCommitteeBits
     );
     const validSignature =
-      this._syncCommitteeSignature.chainsafeSignature.verify(
+      this.syncCommitteeSignature.chainsafeSignature.verify(
         aggregateKey,
         signingRoot.value
       );
@@ -163,18 +167,27 @@ export default class LightClientUpdate {
     return { valid: true };
   }
 
+  get summary(): LightClientUpdateSummary {
+    return {
+      activeParticipants: this.syncCommitteeBits.sumBits,
+      attestedHeaderSlot: Number(this.attestedHeader.beacon.slot.bigInt),
+      signatureSlot: Number(this.signatureSlot.bigInt),
+      finalizedHeaderSlot: Number(this.finalizedHeader.beacon.slot.bigInt),
+      isFinalityUpdate: this.isFinalityUpdate(),
+      isSyncCommitteeUpdate: this.isSyncCommitteeUpdate(),
+    };
+  }
   private _isFinalityUpdateValid() {
-    if (!this.isFinalityUpdate())
-      return this._finalizedHeader.beacon.isZeroed();
+    if (!this.isFinalityUpdate()) return this.finalizedHeader.beacon.isZeroed();
 
-    if (!this._finalizedHeader.isValid()) return false;
+    if (!this.finalizedHeader.isValid()) return false;
 
     const expectedStateRoot = hashMerkleBranch(
-      this._finalizedHeader.beacon.hashTreeRoot,
-      this._finalityBranch,
+      this.finalizedHeader.beacon.hashTreeRoot,
+      this.finalityBranch,
       Field.fromBigInt(BigInt(FINALIZED_ROOT_INDEX))
     );
-    if (!expectedStateRoot.isEqual(this._attestedHeader.beacon.stateRoot))
+    if (!expectedStateRoot.isEqual(this.attestedHeader.beacon.stateRoot))
       return false;
 
     return true;
@@ -184,11 +197,11 @@ export default class LightClientUpdate {
     if (!this.isSyncCommitteeUpdate()) return true;
 
     const expectedStateRoot = hashMerkleBranch(
-      this._nextSyncCommittee.hashTreeRoot,
-      this._nextSyncCommitteeBranch,
+      this.nextSyncCommittee.hashTreeRoot,
+      this.nextSyncCommitteeBranch,
       Field.fromBigInt(BigInt(NEXT_SYNC_COMMITTEE_INDEX))
     );
-    if (!expectedStateRoot.isEqual(this._attestedHeader.beacon.stateRoot))
+    if (!expectedStateRoot.isEqual(this.attestedHeader.beacon.stateRoot))
       return false;
 
     return true;

@@ -1,11 +1,11 @@
 import { BeaconHeaderObject } from "./index.js";
-import SyncCommittee from "./types/beacon/sync-committee.js";
+import SyncCommittee from "./beacon/sync-committee.js";
 import BeaconAPI from "./beacon-api/index.js";
 import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
 import { SYNC_COMMITTEE_SIZE } from "./constants/index.js";
-import Field from "./types/primitives/field.js";
-import LightClientUpdate from "./types/light-client/lc-update.js";
+import Field from "./primitives/field.js";
+import LightClientUpdate from "./light-client/lc-update.js";
 
 describe("test signature from beacon api", () => {
   let beaconAPI: BeaconAPI;

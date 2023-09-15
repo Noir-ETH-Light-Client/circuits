@@ -1,5 +1,5 @@
 import bls from "@chainsafe/bls";
-import hashTreeRoot from "../../hash/hash-tree-root.js";
+import hashTreeRoot from "../hash/hash-tree-root.js";
 import Field from "../primitives/field.js";
 
 export default class BLSPubKey {

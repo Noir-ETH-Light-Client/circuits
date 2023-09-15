@@ -5,13 +5,13 @@ import LightClientHeader from "./lc-header.js";
 import {
   SYNC_COMMITTEES_DEPTH,
   SYNC_COMMITTEES_INDEX,
-} from "src/constants/index.js";
-import hashMerkleBranch from "../../hash/hash-merkle-brach.js";
+} from "../constants/index.js";
+import hashMerkleBranch from "../hash/hash-merkle-brach.js";
 
 export default class LightClientBootstrap {
-  private _header: LightClientHeader;
-  private _current_sync_committee: SyncCommittee;
-  private _current_sync_committee_branch: Array<Field>;
+  readonly header: LightClientHeader;
+  readonly currentSyncCommittee: SyncCommittee;
+  readonly currentSyncCommitteeBranch: Array<Field>;
 
   constructor(
     header: LightClientHeader,
@@ -22,23 +22,23 @@ export default class LightClientBootstrap {
       throw new Error(
         `Expect the current sync committee branch length to be ${SYNC_COMMITTEES_DEPTH}, but got ${current_sync_committee_branch.length}`
       );
-    this._header = header;
-    this._current_sync_committee = new SyncCommittee(current_sync_committee);
-    this._current_sync_committee_branch = current_sync_committee_branch.map(
+    this.header = header;
+    this.currentSyncCommittee = new SyncCommittee(current_sync_committee);
+    this.currentSyncCommitteeBranch = current_sync_committee_branch.map(
       (node) => Field.fromSSZ(node)
     );
   }
   
   isValid(trustedBlockRoot: Field) {
-    const beaconRoot = this._header.beacon.hashTreeRoot;
+    const beaconRoot = this.header.beacon.hashTreeRoot;
     if (!beaconRoot.isEqual(trustedBlockRoot)) return false;
-    if (!this._header.isValid()) return false;
+    if (!this.header.isValid()) return false;
     const index = Field.fromBigInt(BigInt(SYNC_COMMITTEES_INDEX));
     const expectedStateRoot = hashMerkleBranch(
-      this._current_sync_committee.hashTreeRoot,
-      this._current_sync_committee_branch,
+      this.currentSyncCommittee.hashTreeRoot,
+      this.currentSyncCommitteeBranch,
       index
     );
-    return expectedStateRoot.isEqual(this._header.beacon.stateRoot);
+    return expectedStateRoot.isEqual(this.header.beacon.stateRoot);
   }
 }

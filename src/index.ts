@@ -42,3 +42,12 @@ export interface IsLCUpdateValid {
   valid: boolean;
   msg?: InvalidLCMessage;
 }
+
+export interface LightClientUpdateSummary {
+  activeParticipants: number;
+  attestedHeaderSlot: number;
+  signatureSlot: number;
+  finalizedHeaderSlot: number;
+  isSyncCommitteeUpdate: boolean;
+  isFinalityUpdate: boolean;
+}

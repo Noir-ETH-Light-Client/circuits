@@ -41,3 +41,6 @@ export const DENEB_FORK_EPOCH = Number.MAX_VALUE;
 export const SECONDS_PER_SLOT = 12;
 export const SLOTS_PER_EPOCH = 32;
 export const EPOCH_PER_PERIOD = 256;
+
+export const MAX_SYNC_PERIODS_CACHE = 2;
+export const SAFETY_THRESHOLD_FACTOR = 2;

@@ -3,7 +3,7 @@ import {
   byteToBits,
   leBytesToUint8Array,
   uint8ArrayToLeBytes,
-} from "../../converter/numeric.js";
+} from "../converter/numeric.js";
 
 export default class VariableLengthField {
   private _length: number;

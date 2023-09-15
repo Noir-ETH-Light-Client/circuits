@@ -1,5 +1,5 @@
 import { slotToForkVersion } from "../converter/time.js";
-import Field from "../types/primitives/field.js";
+import Field from "../primitives/field.js";
 import hashTwo from "../hash/hash-two.js";
 import { DOMAIN_SYNC_COMMITTEE } from "../constants/index.js";
 

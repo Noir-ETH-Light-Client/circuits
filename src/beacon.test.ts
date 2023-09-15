@@ -5,15 +5,15 @@ import {
   ExecutionPayloadHeaderObject,
   SyncCommitteeObject,
 } from "./index.js";
-import BeaconHeader from "./types/beacon/beacon-header.js";
-import Field from "./types/primitives/field.js";
+import BeaconHeader from "./beacon/beacon-header.js";
+import Field from "./primitives/field.js";
 import {
   EXECUTION_PAYLOAD_INDEX,
   FINALIZED_ROOT_INDEX,
   NEXT_SYNC_COMMITTEE_INDEX,
 } from "./constants/index.js";
 import hashMerkleBranch from "./hash/hash-merkle-brach.js";
-import SyncCommittee from "./types/beacon/sync-committee.js";
+import SyncCommittee from "./beacon/sync-committee.js";
 import BeaconAPI from "./beacon-api/index.js";
 import executionHashTreeRoot from "./hash/hash-execution.js";
 

@@ -1,5 +1,5 @@
 import { BeaconHeaderObject } from "./index.js";
-import SyncCommittee from "./types/beacon/sync-committee.js";
+import SyncCommittee from "./beacon/sync-committee.js";
 import BeaconAPI from "./beacon-api/index.js";
 import { readFileSync, writeFileSync } from "fs";
 import { expect } from "chai";
@@ -7,13 +7,13 @@ import {
   CAPELLA_FORK_VERSION,
   SYNC_COMMITTEE_SIZE,
 } from "./constants/index.js";
-import Field from "./types/primitives/field.js";
+import Field from "./primitives/field.js";
 import computeDomain from "./domain/compute-domain.js";
 import hashTwo from "./hash/hash-two.js";
-import BeaconHeader from "./types/beacon/beacon-header.js";
+import BeaconHeader from "./beacon/beacon-header.js";
 import { slotToForkVersion } from "./converter/time.js";
-import VariableLengthField from "./types/primitives/variable-length-field.js";
-import BLSSignature from "./types/beacon/bls-signature.js";
+import VariableLengthField from "./primitives/variable-length-field.js";
+import BLSSignature from "./beacon/bls-signature.js";
 
 describe("test signature from beacon api", () => {
   let beaconAPI: BeaconAPI;

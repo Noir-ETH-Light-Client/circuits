@@ -6,7 +6,7 @@ import {
   leBytesToBigInt,
   leBytesToUint8Array,
   uint8ArrayToLeBytes,
-} from "../../converter/numeric.js";
+} from "../converter/numeric.js";
 
 export default class Field {
   private _value: Uint8Array;

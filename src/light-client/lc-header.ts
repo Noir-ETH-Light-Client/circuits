@@ -2,15 +2,15 @@ import {
   CAPELLA_FORK_VERSION,
   EXECUTION_PAYLOAD_DEPTH,
   EXECUTION_PAYLOAD_INDEX,
-} from "../../constants/index.js";
+} from "../constants/index.js";
 import {
   BeaconHeaderObject,
   ExecutionPayloadHeaderObject,
-} from "../../index.js";
-import { slotToForkVersion } from "../../converter/time.js";
-import executionHashTreeRoot from "../../hash/hash-execution.js";
+} from "../index.js";
+import { slotToForkVersion } from "../converter/time.js";
+import executionHashTreeRoot from "../hash/hash-execution.js";
 import Field from "../primitives/field.js";
-import hashMerkleBranch from "../../hash/hash-merkle-brach.js";
+import hashMerkleBranch from "../hash/hash-merkle-brach.js";
 import BeaconHeader from "../beacon/beacon-header.js";
 
 export default class LightClientHeader {

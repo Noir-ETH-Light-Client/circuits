@@ -18,6 +18,10 @@ export function epochToPeriod(epoch: number) {
   return Math.floor(epoch / EPOCH_PER_PERIOD);
 }
 
+export function slotToPeriod(slot: number) {
+  return epochToPeriod(slotToEpoch(slot));
+}
+
 export function epochToForkVersion(epoch: number) {
   if (epoch < ALTAIR_FORK_EPOCH) return GENESIS_FORK_VERSION;
   if (epoch < BELLATRIX_FORK_EPOCH) return ALTAIR_FORK_VERSION;
