@@ -2,6 +2,10 @@ import bls from "@chainsafe/bls";
 import hashTreeRoot from "../../hash/hash-tree-root.js";
 import { SyncCommitteeObject } from "../../index.js";
 import VariableLengthField from "../primitives/variable-length-field.js";
+import bls from "@chainsafe/bls";
+import hashTreeRoot from "../../hash/hash-tree-root.js";
+import { SyncCommitteeObject } from "../../index.js";
+import VariableLengthField from "../primitives/variable-length-field.js";
 import BLSPubKey from "./bls-pubkey.js";
 
 export default class SyncCommittee {
