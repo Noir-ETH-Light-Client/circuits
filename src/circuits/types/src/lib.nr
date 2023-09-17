@@ -1,11 +1,15 @@
-fn my_util(x : Field, y : Field) -> bool {
-    x != y
+use dep::primitives::bytes32::Bytes32;
+
+struct BeaconHeader{
+    slot: Field,
+    proposer_index: Field,
+    parent_root: Bytes32,
+    state_root: Bytes32,
+    body_root: Bytes32,
 }
 
-#[test]
-fn test_my_util() {
-    assert(my_util(1, 2));
-
-    // Uncomment to make test fail
-    // assert(my_util(1, 1));
+struct LightClientHeader{
+    beacon: BeaconHeader,
+    execution_root: Bytes32,
+    execution_branch: [Bytes32; 4],
 }

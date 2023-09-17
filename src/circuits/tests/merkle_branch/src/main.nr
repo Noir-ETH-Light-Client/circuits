@@ -1,4 +1,5 @@
-use dep::noirlib::{is_valid_merkle_branch};
-fn main(root: [Field; 2], leaf: [Field; 2], index: Field, branch_his: [Field; 8], branch_los: [Field; 8]){
-    is_valid_merkle_branch::is_valid_merkle_branch(root, leaf, index, branch_his, branch_los);
+use dep::noirlib::is_valid_merkle_branch;
+use dep::primitives::bytes32::Bytes32;
+fn main(root: Bytes32, leaf: Bytes32, index: Field, branch: [Bytes32; 8]){
+    is_valid_merkle_branch::is_valid_merkle_branch(root, leaf, index, branch)
 }

@@ -1,6 +1,9 @@
 use dep::noirlib::utils;
-fn main(x : [Field; 2], y : [Field; 2], expected_res: pub [Field; 2]){
-    let res = utils::hash_two([x[0], y[0]], [x[1], y[1]]);
-    assert(res[0] == expected_res[0]);
-    assert(res[1] == expected_res[1]);
+use dep::primitives::bytes32::Bytes32;
+fn main(x : Bytes32, y : Bytes32, expected_res: pub Bytes32){
+    let res = utils::hash_two(x, y);
+    assert(res.equal(expected_res));
+    let slot = 5 * 8192;
+    let period = utils::slot_to_period(slot);
+    assert(period == 5);
 }

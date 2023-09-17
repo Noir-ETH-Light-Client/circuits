@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import Field from "./types/primitives/field.js";
+import Field from "./primitives/field.js";
 
 describe("test field functions", () => {
   it("should convert correctly to the hi-lo form", () => {

@@ -1,5 +1,5 @@
 import hashTwo from "./hash/hash-two.js";
-import Field from "./types/primitives/field.js";
+import Field from "./primitives/field.js";
 import hashTwoCircuit from "./circuits/tests/hash_two/target/hash_two.json" assert { type: "json" };
 import sha256Circuit from "./circuits/tests/sha256/target/sha256.json" assert { type: "json" };
 import hashTreeRootCircuit from "./circuits/tests/hash_tree_root/target/hash_tree_root.json" assert { type: "json" };
