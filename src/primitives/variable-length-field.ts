@@ -1,6 +1,7 @@
 import {
   bigIntToLEBytes,
   byteToBits,
+  leBytesToBigInt,
   leBytesToUint8Array,
   uint8ArrayToLeBytes,
 } from "../converter/numeric.js";
@@ -63,6 +64,18 @@ export default class VariableLengthField {
       res += this._value[i].toString(16).padStart(2, "0");
     }
     return res;
+  }
+
+  chunks(chunkLength: number): BigInt[] {
+    let leBytes = this.leBytes;
+    let numChunks = Math.ceil(this._length / chunkLength);
+    let result = new Array(numChunks);
+    for (let i = 0; i < numChunks; i++) {
+      let bytes = leBytes.slice(i * chunkLength, (i + 1) * chunkLength);
+      let number = leBytesToBigInt(bytes, chunkLength);
+      result[i] = number;
+    }
+    return result;
   }
 
   clone() {

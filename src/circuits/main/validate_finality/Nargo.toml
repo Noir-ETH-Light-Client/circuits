@@ -1,0 +1,10 @@
+[package]
+name = "validate_finality"
+type = "bin"
+authors = [""]
+compiler_version = "0.10.3"
+
+[dependencies]
+noirlib = {path = "../../noirlib"}
+types = {path = "../../types"}
+primitives = {path = "../../primitives"}

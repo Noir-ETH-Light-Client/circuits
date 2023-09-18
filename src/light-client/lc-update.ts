@@ -210,8 +210,68 @@ export default class LightClientUpdate {
 
     return true;
   }
+  generateFinalityWitness() {
+    const attestedBeacon = this.attestedHeader.beacon.flat;
+    let emptyExecutionBranch = new Array(2 * EXECUTION_PAYLOAD_DEPTH);
+    for (let i = 0; i < 2 * EXECUTION_PAYLOAD_DEPTH; i++)
+      emptyExecutionBranch[i] = 0n;
+    const finalizedBeacon = this.finalizedHeader.beacon.flat;
+    const finalizedExecutionRoot = this.finalizedHeader.execution
+      ? executionHashTreeRoot(this.finalizedHeader.execution).hilo
+      : [0n, 0n];
+    const finalizedExecutionBranch = this.finalizedHeader.executionBranch
+      ? this.finalizedHeader.executionBranch.reduce(
+          (list: BigInt[], node) => [...list, ...node.hilo],
+          []
+        )
+      : emptyExecutionBranch;
+    const finalityBranch = this.finalityBranch.reduce(
+      (list: BigInt[], node) => [...list, ...node.hilo],
+      []
+    );
+    const isFinalityUpdate = this.isFinalityUpdate();
+    const inputs = [
+      ...attestedBeacon,
+      ...finalizedBeacon,
+      ...finalizedExecutionRoot,
+      ...finalizedExecutionBranch,
+      ...finalityBranch,
+      isFinalityUpdate,
+    ];
 
-  generateWitness(syncCommittee: SyncCommittee, genesisValidatorsRoot: Field) {
+    const witness = new Map<number, string>();
+    inputs.forEach((input, index) => {
+      witness.set(index + 1, convertToHexAndPad(input));
+    });
+    return witness;
+  }
+
+  generateNextSyncCommitteeWitness() {
+    const attestedBeacon = this.attestedHeader.beacon.flat;
+    const nextSyncCommitteeAllRoots = this.nextSyncCommittee.allRoots;
+    const nextSyncCommitteePubkeysRoot =
+      nextSyncCommitteeAllRoots.pubkeysRoot.hilo;
+    const nextSyncCommitteeAggkey = this.nextSyncCommittee.aggregateKey.hilo;
+    const nextSyncCommitteeBranch = this.nextSyncCommitteeBranch.reduce(
+      (list: BigInt[], node) => [...list, ...node.hilo],
+      []
+    );
+    const isSyncCommitteeUpdate = this.isSyncCommitteeUpdate();
+    const inputs = [
+      ...attestedBeacon,
+      ...nextSyncCommitteePubkeysRoot,
+      ...nextSyncCommitteeAggkey,
+      ...nextSyncCommitteeBranch,
+      isSyncCommitteeUpdate,
+    ];
+
+    const witness = new Map<number, string>();
+    inputs.forEach((input, index) => {
+      witness.set(index + 1, convertToHexAndPad(input));
+    });
+    return witness;
+  }
+  generateLCUpdateWitness(genesisValidatorsRoot: Field) {
     let emptyExecutionBranch = new Array(2 * EXECUTION_PAYLOAD_DEPTH);
     for (let i = 0; i < 2 * EXECUTION_PAYLOAD_DEPTH; i++)
       emptyExecutionBranch[i] = 0n;
@@ -229,37 +289,9 @@ export default class LightClientUpdate {
         )
       : emptyExecutionBranch;
 
-    const finalizedBeacon = this.finalizedHeader.beacon.flat;
-    const finalizedExecutionRoot = this.finalizedHeader.execution
-      ? executionHashTreeRoot(this.finalizedHeader.execution).hilo
-      : [0n, 0n];
-    const finalizedExecutionBranch = this.finalizedHeader.executionBranch
-      ? this.finalizedHeader.executionBranch.reduce(
-          (list: BigInt[], node) => [...list, ...node.hilo],
-          []
-        )
-      : emptyExecutionBranch;
-    const finalityBranch = this.finalityBranch.reduce(
-      (list: BigInt[], node) => [...list, ...node.hilo],
-      []
-    );
-
-    const nextSyncCommitteeAllRoots = this.nextSyncCommittee.allRoots;
-    const nextSyncCommitteePubkeysRoot =
-      nextSyncCommitteeAllRoots.pubkeysRoot.hilo;
-    const nextSyncCommitteeAggkey = this.nextSyncCommittee.aggregateKey.hilo;
-    const nextSyncCommitteeBranch = this.nextSyncCommitteeBranch.reduce(
-      (list: BigInt[], node) => [...list, ...node.hilo],
-      []
-    );
-
-    const syncCommitteeBits = this.syncCommitteeBits.leBits;
-    const syncCommitteeAggkey = syncCommittee.aggregateKey.hilo;
-    const syncCommitteeSignature = this.syncCommitteeSignature.value;
+    const syncCommitteeBits = this.syncCommitteeBits.chunks(16);
 
     const signingRoot = this._computeSigningRoot(genesisValidatorsRoot).hilo;
-    const isFinalityUpdate = this.isFinalityUpdate();
-    const isSyncCommitteeUpdate = this.isSyncCommitteeUpdate();
     const activeParticipants = this.syncCommitteeBits.sumBits;
 
     const inputs = [
@@ -267,19 +299,8 @@ export default class LightClientUpdate {
       ...attestedBeacon,
       ...attestedExecutionRoot,
       ...attestedExecutionBranch,
-      ...finalizedBeacon,
-      ...finalizedExecutionRoot,
-      ...finalizedExecutionBranch,
-      ...finalityBranch,
-      ...nextSyncCommitteePubkeysRoot,
-      ...nextSyncCommitteeAggkey,
-      ...nextSyncCommitteeBranch,
       ...syncCommitteeBits,
-      ...syncCommitteeAggkey,
-      ...syncCommitteeSignature,
       ...signingRoot,
-      isFinalityUpdate,
-      isSyncCommitteeUpdate,
       activeParticipants,
     ];
 

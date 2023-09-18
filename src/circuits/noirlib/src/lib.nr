@@ -6,4 +6,6 @@ mod is_branch_not_empty;
 mod validate_merkle_branch;
 mod validate_lc_header;
 mod validate_lc_update;
+mod validate_finality;
+mod validate_next_sync_committee;
 mod utils;
