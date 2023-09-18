@@ -5,6 +5,7 @@ import {
   newBarretenbergApiAsync,
 } from "@aztec/bb.js/dest/node/index.js";
 import { compressWitness, executeCircuit } from "@noir-lang/acvm_js";
+import { NoirSolidityProof } from "../index.js";
 
 export async function validateWitness(
   witness: Map<number, string>,
@@ -32,10 +33,10 @@ export async function validateWitness(
   const witnessBuff = compressWitness(witnessMap);
   return witnessBuff !== undefined;
 }
-export async function generateProofAndVerify(
+export async function generateProof(
   witness: Map<number, string>,
   circuitArtifact: any
-) {
+): Promise<NoirSolidityProof> {
   let acirBuffer = Buffer.from(circuitArtifact.bytecode, "base64");
   let acirBufferUncompressed = decompressSync(acirBuffer);
   let api = await newBarretenbergApiAsync(4);
@@ -66,7 +67,30 @@ export async function generateProofAndVerify(
     false
   );
 
-  await api.acirInitProvingKey(acirComposer, acirBufferUncompressed);
-  const verified = await api.acirVerifyProof(acirComposer, proof, false);
-  return verified;
+  let numberPublicInputs = 0;
+  for (var field of circuitArtifact.abi.parameters) {
+    if (field.visibility == "public") {
+      if (field.type.kind == "array") numberPublicInputs += field.type.length;
+      else if (field.type.kind == "struct") {
+        if (field.type.name == "BeaconHeader") {
+          numberPublicInputs += 8;
+        } else {
+          numberPublicInputs += field.type.fields.length;
+        }
+      } else numberPublicInputs++;
+    }
+  }
+
+  return {
+    slicedProof: proof.slice(32 * numberPublicInputs),
+    publicInputs: getPublicInputs(proof, numberPublicInputs),
+  };
+}
+
+function getPublicInputs(proof: any, len: number) {
+  var res = [];
+  for (var i = 0; i < len; i++) {
+    res.push(proof.slice(i * 32, (i + 1) * 32));
+  }
+  return res;
 }

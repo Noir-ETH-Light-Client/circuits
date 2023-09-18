@@ -51,3 +51,8 @@ export interface LightClientUpdateSummary {
   isSyncCommitteeUpdate: boolean;
   isFinalityUpdate: boolean;
 }
+
+export interface NoirSolidityProof {
+  slicedProof: Uint8Array;
+  publicInputs: Uint8Array[];
+}
