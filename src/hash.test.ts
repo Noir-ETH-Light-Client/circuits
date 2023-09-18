@@ -4,7 +4,10 @@ import hashTwoCircuit from "./circuits/tests/hash_two/target/hash_two.json" asse
 import sha256Circuit from "./circuits/tests/sha256/target/sha256.json" assert { type: "json" };
 import hashTreeRootCircuit from "./circuits/tests/hash_tree_root/target/hash_tree_root.json" assert { type: "json" };
 import merkleBranchCircuit from "./circuits/tests/merkle_branch/target/merkle_branch.json" assert { type: "json" };
-import { convertToHexAndPad, leBytesToUint8Array } from "./converter/numeric.js";
+import {
+  convertToHexAndPad,
+  leBytesToUint8Array,
+} from "./converter/numeric.js";
 import { validateWitness } from "./berretenberg-api/index.js";
 import { expect } from "chai";
 import { sha256 } from "js-sha256";
@@ -56,18 +59,17 @@ describe("test hash functions", () => {
     let leaves = [x0, x1, x2, x3, x4];
     let treeRoot = hashTreeRoot(leaves);
 
-    let his: BigInt[] = [];
-    let los: BigInt[] = [];
-    leaves.forEach((leaf) => {
-      let hilo = leaf.hilo;
-      his.push(hilo[0]);
-      los.push(hilo[1]);
-    });
-    his = [...his, 0n, 0n, 0n];
-    los = [...los, 0n, 0n, 0n];
-
     let treeRootHiLo = treeRoot.hilo;
-    let inputs = [...his, ...los, ...treeRootHiLo];
+    let inputs = [
+      ...leaves.reduce((acc: BigInt[], leaf) => [...acc, ...leaf.hilo], []),
+      0n,
+      0n,
+      0n,
+      0n,
+      0n,
+      0n,
+      ...treeRootHiLo,
+    ];
     const witness = new Map<number, string>();
     inputs.forEach((input, index) => {
       witness.set(index + 1, convertToHexAndPad(input));
@@ -85,14 +87,7 @@ describe("test hash functions", () => {
     let index = Field.fromBigInt(BigInt(134));
     let root = hashMerkleBranch(leaf, branch, index);
 
-    let his: BigInt[] = [];
-    let los: BigInt[] = [];
-    branch.forEach((node) => {
-      let hilo = node.hilo;
-      his.push(hilo[0]);
-      los.push(hilo[1]);
-    });
-    let inputs = [...root.hilo, ...leaf.hilo, index.bigInt, ...his, ...los];
+    let inputs = [...root.hilo, ...leaf.hilo, index.bigInt, ...branch.reduce((acc: BigInt[], leaf) => [...acc, ...leaf.hilo], [])];
     const witness = new Map<number, string>();
     inputs.forEach((input, index) => {
       witness.set(index + 1, convertToHexAndPad(input));

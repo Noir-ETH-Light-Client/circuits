@@ -1,5 +1,6 @@
 import hashMerkleBranch from "../hash/hash-merkle-brach.js";
 import {
+  EXECUTION_PAYLOAD_DEPTH,
   FINALIZED_ROOT_DEPTH,
   FINALIZED_ROOT_INDEX,
   MIN_SYNC_COMMITTEE_PARTICIPANTS,
@@ -19,6 +20,8 @@ import {
 } from "../index.js";
 import computeDomain from "../domain/compute-domain.js";
 import hashTwo from "../hash/hash-two.js";
+import executionHashTreeRoot from "../hash/hash-execution.js";
+import { convertToHexAndPad } from "../converter/numeric.js";
 
 export default class LightClientUpdate {
   readonly signatureSlot: Field;
@@ -143,14 +146,8 @@ export default class LightClientUpdate {
         valid: false,
         msg: InvalidLCMessage.INVALID_SYNC_COMMITTEE_UPDATE,
       };
-    const domain = computeDomain(
-      Number(this.signatureSlot.bigInt) - 1,
-      genesisValidatorsRoot
-    );
-    const signingRoot = hashTwo(
-      this.attestedHeader.beacon.hashTreeRoot,
-      domain
-    );
+
+    const signingRoot = this._computeSigningRoot(genesisValidatorsRoot);
     const aggregateKey = syncCommittee.getAggregateParticipantPubkeys(
       this.syncCommitteeBits
     );
@@ -193,6 +190,13 @@ export default class LightClientUpdate {
     return true;
   }
 
+  private _computeSigningRoot(genesisValidatorsRoot: Field) {
+    const domain = computeDomain(
+      Number(this.signatureSlot.bigInt) - 1,
+      genesisValidatorsRoot
+    );
+    return hashTwo(this.attestedHeader.beacon.hashTreeRoot, domain);
+  }
   private _isSyncCommitteeUpdateValid() {
     if (!this.isSyncCommitteeUpdate()) return true;
 
@@ -205,5 +209,84 @@ export default class LightClientUpdate {
       return false;
 
     return true;
+  }
+
+  generateWitness(syncCommittee: SyncCommittee, genesisValidatorsRoot: Field) {
+    let emptyExecutionBranch = new Array(2 * EXECUTION_PAYLOAD_DEPTH);
+    for (let i = 0; i < 2 * EXECUTION_PAYLOAD_DEPTH; i++)
+      emptyExecutionBranch[i] = 0n;
+
+    const signatureSlot = this.signatureSlot.bigInt;
+
+    const attestedBeacon = this.attestedHeader.beacon.flat;
+    const attestedExecutionRoot = this.attestedHeader.execution
+      ? executionHashTreeRoot(this.attestedHeader.execution).hilo
+      : [0n, 0n];
+    const attestedExecutionBranch = this.attestedHeader.executionBranch
+      ? this.attestedHeader.executionBranch.reduce(
+          (list: BigInt[], node) => [...list, ...node.hilo],
+          []
+        )
+      : emptyExecutionBranch;
+
+    const finalizedBeacon = this.finalizedHeader.beacon.flat;
+    const finalizedExecutionRoot = this.finalizedHeader.execution
+      ? executionHashTreeRoot(this.finalizedHeader.execution).hilo
+      : [0n, 0n];
+    const finalizedExecutionBranch = this.finalizedHeader.executionBranch
+      ? this.finalizedHeader.executionBranch.reduce(
+          (list: BigInt[], node) => [...list, ...node.hilo],
+          []
+        )
+      : emptyExecutionBranch;
+    const finalityBranch = this.finalityBranch.reduce(
+      (list: BigInt[], node) => [...list, ...node.hilo],
+      []
+    );
+
+    const nextSyncCommitteeAllRoots = this.nextSyncCommittee.allRoots;
+    const nextSyncCommitteePubkeysRoot =
+      nextSyncCommitteeAllRoots.pubkeysRoot.hilo;
+    const nextSyncCommitteeAggkey = this.nextSyncCommittee.aggregateKey.hilo;
+    const nextSyncCommitteeBranch = this.nextSyncCommitteeBranch.reduce(
+      (list: BigInt[], node) => [...list, ...node.hilo],
+      []
+    );
+
+    const syncCommitteeBits = this.syncCommitteeBits.leBits;
+    const syncCommitteeAggkey = syncCommittee.aggregateKey.hilo;
+    const syncCommitteeSignature = this.syncCommitteeSignature.value;
+
+    const signingRoot = this._computeSigningRoot(genesisValidatorsRoot).hilo;
+    const isFinalityUpdate = this.isFinalityUpdate();
+    const isSyncCommitteeUpdate = this.isSyncCommitteeUpdate();
+    const activeParticipants = this.syncCommitteeBits.sumBits;
+
+    const inputs = [
+      signatureSlot,
+      ...attestedBeacon,
+      ...attestedExecutionRoot,
+      ...attestedExecutionBranch,
+      ...finalizedBeacon,
+      ...finalizedExecutionRoot,
+      ...finalizedExecutionBranch,
+      ...finalityBranch,
+      ...nextSyncCommitteePubkeysRoot,
+      ...nextSyncCommitteeAggkey,
+      ...nextSyncCommitteeBranch,
+      ...syncCommitteeBits,
+      ...syncCommitteeAggkey,
+      ...syncCommitteeSignature,
+      ...signingRoot,
+      isFinalityUpdate,
+      isSyncCommitteeUpdate,
+      activeParticipants,
+    ];
+
+    const witness = new Map<number, string>();
+    inputs.forEach((input, index) => {
+      witness.set(index + 1, convertToHexAndPad(input));
+    });
+    return witness;
   }
 }

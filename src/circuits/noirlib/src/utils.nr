@@ -36,14 +36,12 @@ fn slot_to_period(slot: Field) -> Field{
 }
 
 fn is_less_than(x: Field, y: Field) -> bool{
-    let x_bytes = x.to_le_bytes(32);
-    let y_bytes = y.to_le_bytes(32);
+    let x_bits = x.to_be_bits(254);
+    let y_bits = y.to_be_bits(254);
     let mut res = false;
-    for i in 0..32{
-        if(!res){
-            if(x_bytes[i] < y_bytes[i]){
-                res = true;
-            }
+    for i in  0..254 {
+        if (x_bits[i] < y_bits[i]) {
+            res = true;
         }
     }
     res

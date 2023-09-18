@@ -1,0 +1,9 @@
+[package]
+name = "hash_pubkeys"
+type = "bin"
+authors = [""]
+compiler_version = "0.10.3"
+
+[dependencies]
+noirlib = {path = "../../noirlib"}
+primitives = {path = "../../primitives"}

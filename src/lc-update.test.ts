@@ -6,6 +6,8 @@ import { expect } from "chai";
 import { SYNC_COMMITTEE_SIZE } from "./constants/index.js";
 import Field from "./primitives/field.js";
 import LightClientUpdate from "./light-client/lc-update.js";
+import validateLCUpdateCircuit from "./circuits/main/validate_lc_update/target/validate_lc_update.json" assert { type: "json" };
+import { validateWitness } from "./berretenberg-api/index.js";
 
 describe("test signature from beacon api", () => {
   let beaconAPI: BeaconAPI;
@@ -19,6 +21,7 @@ describe("test signature from beacon api", () => {
     genesisValidatorsRoot = Field.fromSSZ(
       genesis.data.data.genesis_validators_root
     );
+    console.log(genesisValidatorsRoot.value);
 
     lcUpdates = await beaconAPI.downloadLCUpdates(700);
   });
@@ -53,6 +56,14 @@ describe("test signature from beacon api", () => {
       genesisValidatorsRoot
     );
     expect(isLCValid.valid).to.be.true;
+
+    const witness = lcUpdate.generateWitness(
+      currentSyncCommittee,
+      genesisValidatorsRoot
+    );
+    
+    const verified = await validateWitness(witness, validateLCUpdateCircuit);
+    expect(verified).to.be.true;
   });
   it("test lc update 1", async () => {
     const previousUpdate = lcUpdates.data[0];
@@ -69,5 +80,13 @@ describe("test signature from beacon api", () => {
       genesisValidatorsRoot
     );
     expect(isLCValid.valid).to.be.true;
+
+    const witness = lcUpdate.generateWitness(
+      currentSyncCommittee,
+      genesisValidatorsRoot
+    );
+
+    const verified = await validateWitness(witness, validateLCUpdateCircuit);
+    expect(verified).to.be.true;
   });
 });

@@ -13,18 +13,21 @@ fn hash_tree_root<N>(leaves: [Bytes32; N]) -> Bytes32{
         hashes[i] = utils::hash_two(hashes[2 * k], hashes[2 * k + 1]);
         k = k + 1;
     }
-    hashes[N - 1]
+    hashes[N - 2]
 }
 
-fn hash_tree_root_sync_committee<N>(pubkeys: [Bytes48; N], aggkey: Bytes48) -> Bytes32{
+fn hash_tree_root_sync_committee(pubkeys_root: Bytes32, aggkey: Bytes48) -> Bytes32{
+    let aggkey_root = utils::hash_bytes48(aggkey);
+    utils::hash_two(pubkeys_root, aggkey_root)
+}
+
+fn hash_tree_root_pubkeys<N>(pubkeys: [Bytes48; N]) -> Bytes32{
     let mut pubkey_roots: [Bytes32; N] = [Bytes32::zero(); N];
     for i in 0..N{
         pubkey_roots[i] = utils::hash_bytes48(pubkeys[i]);
     }
     let pubkeys_root = hash_tree_root(pubkey_roots);
-
-    let aggkey_root = utils::hash_bytes48(aggkey);
-    utils::hash_two(pubkeys_root, aggkey_root)
+    pubkeys_root
 }
 
 fn hash_tree_root_beacon_header(header: BeaconHeader) -> Bytes32{
