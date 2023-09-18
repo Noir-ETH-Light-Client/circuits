@@ -37,10 +37,12 @@ fn validate_lc_update(
     
     assert(!utils::is_less_than(attested_header.beacon.slot, finalized_header.beacon.slot));
 
+    
     let fork_version = 3;
     // compute_domain::compute_fork_version(signature_slot - 1);
 
     validate_lc_header::validate_lc_header(fork_version, attested_header);
+
 
     assert(is_finality_update == is_branch_not_empty::is_branch_not_empty(finality_branch));
 
@@ -62,4 +64,5 @@ fn validate_lc_update(
 
     assert(active_participants == bits_sum::bits_sum(sync_committee_bits));
     // TO-DO: verify bls signature
+  
 }

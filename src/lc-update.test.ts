@@ -21,7 +21,6 @@ describe("test signature from beacon api", () => {
     genesisValidatorsRoot = Field.fromSSZ(
       genesis.data.data.genesis_validators_root
     );
-    console.log(genesisValidatorsRoot.value);
 
     lcUpdates = await beaconAPI.downloadLCUpdates(700);
   });

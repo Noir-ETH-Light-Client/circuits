@@ -10,5 +10,5 @@ fn is_branch_not_empty<N>(branch: [Bytes32; N]) -> bool{
             res = true;
         }
     }
-    false
+    res
 }
