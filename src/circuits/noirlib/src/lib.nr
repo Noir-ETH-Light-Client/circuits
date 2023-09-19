@@ -1,6 +1,10 @@
 mod bits_sum;
+mod bytes_repr;
+mod compress;
 mod compute_domain;
 mod compute_signing_root;
+mod expand_message;
+mod gates;
 mod hash_aggregated_key;
 mod hash_tree_root;
 mod is_branch_not_empty;
@@ -11,4 +15,3 @@ mod is_zeroed_sync_committee;
 mod sync_commitee_hash_tree_root;
 mod validate_lc_update;
 mod utils;
-mod bytes_repr;

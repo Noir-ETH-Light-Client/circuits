@@ -12,3 +12,5 @@ fn hash_two(his: [Field; 2], los: [Field; 2]) -> [Field; 2]{
     let hash = std::hash::sha256(digest);
     bytes_repr::from_le_bytes(hash)
 }
+
+
