@@ -13,8 +13,26 @@ import { expect } from "chai";
 import { sha256 } from "js-sha256";
 import hashTreeRoot from "./hash/hash-tree-root.js";
 import hashMerkleBranch from "./hash/hash-merkle-brach.js";
+import artifact from "../artifacts/contracts/LightClientValidator.sol/LightClientValidator.json" assert { type: "json" };
+import { ethers } from "ethers";
 
 describe("test hash functions", () => {
+  let contract: any;
+
+  before("deploy the target contract", async () => {
+    const provider = ethers.getDefaultProvider("http://127.0.0.1:8545");
+    const wallet = new ethers.Wallet(
+      "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      provider
+    );
+    const Factory = new ethers.ContractFactory(
+      artifact.abi,
+      artifact.bytecode,
+      wallet
+    );
+    contract = await Factory.deploy();
+  });
+
   it("test sha256", async () => {
     let leBytes = new Array(32);
     for (let i = 0; i < 32; i++) {
@@ -49,6 +67,9 @@ describe("test hash functions", () => {
     });
     const verified = await validateWitness(witness, hashTwoCircuit);
     expect(verified).to.be.true;
+
+    const expectedHash = await contract.hashTwo(x.value, y.value);
+    expect(expectedHash).to.be.equal(hash.ssz);
   });
   it("test hashTreeRoot function", async () => {
     let x0 = Field.fromBigInt(BigInt("943981741707232874"));
@@ -87,7 +108,12 @@ describe("test hash functions", () => {
     let index = Field.fromBigInt(BigInt(134));
     let root = hashMerkleBranch(leaf, branch, index);
 
-    let inputs = [...root.hilo, ...leaf.hilo, index.bigInt, ...branch.reduce((acc: BigInt[], leaf) => [...acc, ...leaf.hilo], [])];
+    let inputs = [
+      ...root.hilo,
+      ...leaf.hilo,
+      index.bigInt,
+      ...branch.reduce((acc: BigInt[], leaf) => [...acc, ...leaf.hilo], []),
+    ];
     const witness = new Map<number, string>();
     inputs.forEach((input, index) => {
       witness.set(index + 1, convertToHexAndPad(input));

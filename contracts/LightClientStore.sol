@@ -2,8 +2,11 @@
 pragma solidity ^0.8.9;
 
 import {ILightClientStore} from "./ILightClientStore.sol";
+import {ILightClientValidator} from "./IClientValidator.sol";
 
 contract LightClientStore is ILightClientStore {
+    ILightClientValidator public lcValidator;
+
     uint8 public constant MAX_SYNC_PERIODS_CACHE = 2;
     uint8 public constant SAFETY_THRESHOLD = 2;
     uint16 public constant SLOTS_PER_PERIOD = 1 << 13;
@@ -26,7 +29,9 @@ contract LightClientStore is ILightClientStore {
     event OptimisticHeaderUpdated(BeaconHeader newHeader);
     event FinalityHeaderUpdated(BeaconHeader newHeader);
 
-    constructor() {}
+    constructor(ILightClientValidator _lcValidator) {
+        lcValidator = _lcValidator;
+    }
 
     function slotToPeriod(uint64 slot) public pure returns (uint64) {
         return slot / SLOTS_PER_PERIOD;
@@ -218,10 +223,13 @@ contract LightClientStore is ILightClientStore {
     }
 
     function processLCUpdate(
-        LightClientUpdate memory update,
-        BeaconHeader memory attestedHeader,
-        BeaconHeader memory updatedfinalizedHeader
+        ILightClientValidator.LCValidateData memory lc
     ) external {
+        (
+            BeaconHeader memory attestedHeader,
+            BeaconHeader memory updatedfinalizedHeader,
+            LightClientUpdate memory update
+        ) = lcValidator.validateLCUpdate(lc);
         require(
             update.summary.attestedHeaderSlot == attestedHeader.slot,
             "attested header slots mismatch"
@@ -260,6 +268,8 @@ contract LightClientStore is ILightClientStore {
             }
         }
 
-        if (update.summary.isSyncCommitteeUpdate) {}
+        if (update.summary.isSyncCommitteeUpdate) {
+            setBestValidUpdate(period, update);
+        }
     }
 }

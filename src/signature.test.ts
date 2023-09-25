@@ -14,14 +14,29 @@ import BeaconHeader from "./beacon/beacon-header.js";
 import { slotToForkVersion } from "./converter/time.js";
 import VariableLengthField from "./primitives/variable-length-field.js";
 import BLSSignature from "./beacon/bls-signature.js";
+import artifact from "../artifacts/contracts/LightClientValidator.sol/LightClientValidator.json" assert { type: "json" };
+import { ethers } from "ethers";
 
 describe("test signature from beacon api", () => {
   let beaconAPI: BeaconAPI;
   let lcUpdates: any;
   const bootstrapFile = "bootstrap-state.json";
-  before("download lc updates", async () => {
+  let contract: any;
+
+  before("download lc updates + deploy contract", async () => {
     beaconAPI = new BeaconAPI();
     lcUpdates = await beaconAPI.downloadLCUpdates(700);
+    const provider = ethers.getDefaultProvider("http://127.0.0.1:8545");
+    const wallet = new ethers.Wallet(
+      "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      provider
+    );
+    const Factory = new ethers.ContractFactory(
+      artifact.abi,
+      artifact.bytecode,
+      wallet
+    );
+    contract = await Factory.deploy();
   });
   it.skip("download boostrap state", async () => {
     const update = lcUpdates.data[0];
@@ -78,5 +93,21 @@ describe("test signature from beacon api", () => {
 
     expect(syncCommitteeSignature.verify(aggregateKey, signingRoot.value)).to.be
       .true;
+
+    const pubkey0 = currentSyncCommittee.pubKeys[0];
+    const pubkey0Root = pubkey0.hashTreeRoot;
+
+    const pubkey0Data = pubkey0.contractData;
+    const expectedPubkey0Root = await contract.hashTwo(...pubkey0Data);
+
+    expect(expectedPubkey0Root).to.be.equal(pubkey0Root.ssz);
+
+    const contractData = currentSyncCommittee.pubKeys.map(
+      (pubkey) => pubkey.contractData
+    );
+    const expectedHash = currentSyncCommittee.pubkeysRoot.ssz;
+    const actualHash = await contract.hashPubkeys(contractData);
+
+    expect(actualHash).to.be.equal(expectedHash);
   });
 });

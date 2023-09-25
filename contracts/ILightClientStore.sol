@@ -3,14 +3,14 @@ pragma solidity ^0.8.9;
 
 interface ILightClientStore {
     struct BeaconHeader {
-        uint256 parentRoot;
-        uint256 stateRoot;
-        uint256 bodyRoot;
+        bytes32 parentRoot;
+        bytes32 stateRoot;
+        bytes32 bodyRoot;
         uint64 slot;
         uint64 proposerIndex;
     }
     struct SyncCommittee{
-        uint256[4][512] pubkeys;
+        bytes32[2][512] pubkeys;
         uint64 period;
     }
     struct ActiveParticipants{
@@ -18,7 +18,7 @@ interface ILightClientStore {
         uint16 count;
     }
     struct LightClientUpdate{
-        uint256[4][512] nextPubkeys;
+        bytes32[2][512] nextPubkeys;
         LightClientUpdateSummary summary;
     }
     struct LightClientUpdateSummary{

@@ -1,7 +1,11 @@
 import bls from "@chainsafe/bls";
 import hashTreeRoot from "../hash/hash-tree-root.js";
 import Field from "../primitives/field.js";
-import { bigIntToHilo, leBytesToBigInt, uint8ArrayToLeBytes } from "../converter/numeric.js";
+import {
+  bigIntToHilo,
+  leBytesToBigInt,
+  uint8ArrayToLeBytes,
+} from "../converter/numeric.js";
 
 export default class BLSPubKey {
   readonly value: Uint8Array;
@@ -45,6 +49,13 @@ export default class BLSPubKey {
     const leaf0 = new Field(this.value.slice(0, 32));
     const leaf1 = new Field(this.value.slice(32));
     return hashTreeRoot([leaf0, leaf1]);
+  }
+
+  get contractData() {
+    const first = this.value.slice(0, 32);
+    const second = new Uint8Array(32);
+    second.set(this.value.slice(32));
+    return [first, second];
   }
 
   get chainsafePubkey() {

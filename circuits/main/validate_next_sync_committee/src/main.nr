@@ -4,11 +4,11 @@ use dep::primitives::bytes48::Bytes48;
 use dep::noirlib::validate_next_sync_committee::validate_next_sync_committee;
 
 fn main(
-    attested_beacon: BeaconHeader, 
-    next_sync_committee_pubkeys_root: Bytes32,
-    next_sync_committee_aggkey: Bytes48,
+    attested_beacon: pub BeaconHeader, 
+    next_sync_committee_pubkeys_root: pub Bytes32,
+    next_sync_committee_aggkey: pub Bytes48,
     next_sync_committee_branch: [Bytes32; 5],
-    is_sync_committee_update: bool
+    is_sync_committee_update: pub bool
 ){
 
     validate_next_sync_committee(
