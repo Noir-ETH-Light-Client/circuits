@@ -183,7 +183,7 @@ contract LightClientStore is ILightClientStore {
                     allowForceUpdate
                 ) {
                     syncCommittees[syncCommitteesIndex] = SyncCommittee(
-                        bestValidUpdates[i].nextPubkeys,
+                        bestValidUpdates[i].nextSyncCommitteeRoot,
                         period
                     );
                     syncCommitteesIndex =

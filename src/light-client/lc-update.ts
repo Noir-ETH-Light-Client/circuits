@@ -22,6 +22,10 @@ import computeDomain from "../domain/compute-domain.js";
 import hashTwo from "../hash/hash-two.js";
 import executionHashTreeRoot from "../hash/hash-execution.js";
 import { convertToHexAndPad } from "../converter/numeric.js";
+import validateLCUpdateCircuit from "../../circuits/main/validate_lc_update/target/validate_lc_update.json" assert { type: "json" };
+import validateFinalityCircuit from "../../circuits/main/validate_finality/target/validate_finality.json" assert { type: "json" };
+import validateNextSyncCommCircuit from "../../circuits/main/validate_next_sync_committee/target/validate_next_sync_committee.json" assert { type: "json" };
+import { generateProof } from "../berretenberg-api/index.js";
 
 export default class LightClientUpdate {
   readonly signatureSlot: Field;
@@ -271,6 +275,7 @@ export default class LightClientUpdate {
     });
     return witness;
   }
+
   generateLCUpdateWitness(genesisValidatorsRoot: Field) {
     let emptyExecutionBranch = new Array(2 * EXECUTION_PAYLOAD_DEPTH);
     for (let i = 0; i < 2 * EXECUTION_PAYLOAD_DEPTH; i++)
@@ -309,5 +314,41 @@ export default class LightClientUpdate {
       witness.set(index + 1, convertToHexAndPad(input));
     });
     return witness;
+  }
+
+  async generateFinalityProof() {
+    const witness = this.generateFinalityWitness();
+    return await generateProof(witness, validateFinalityCircuit);
+  }
+
+  async generateNextSyncCommitteeProof() {
+    const witness = this.generateNextSyncCommitteeWitness();
+    return await generateProof(witness, validateNextSyncCommCircuit);
+  }
+
+  async generateLCUpdateProof(genesisValidatorsRoot: Field) {
+    const witness = this.generateLCUpdateWitness(genesisValidatorsRoot);
+    return await generateProof(witness, validateLCUpdateCircuit);
+  }
+
+  async validateLCUpdateContractData(genesisValidatorsRoot: Field) {
+    const finalityProof = await this.generateFinalityProof();
+    const nextSyncCommitteeProof = await this.generateNextSyncCommitteeProof();
+    const lcUpdateProof = await this.generateLCUpdateProof(
+      genesisValidatorsRoot
+    );
+    const nextPubkeys = this.nextSyncCommittee.pubKeys.map(
+      (pubkey) => pubkey.contractData
+    );
+
+    return [
+      finalityProof.slicedProof,
+      finalityProof.publicInputs,
+      nextSyncCommitteeProof.slicedProof,
+      nextSyncCommitteeProof.publicInputs,
+      lcUpdateProof.slicedProof,
+      lcUpdateProof.publicInputs,
+      nextPubkeys,
+    ];
   }
 }

@@ -26,7 +26,7 @@ contract LightClientValidator is ILightClientValidator {
     }
 
     function hashPubkeys(
-        bytes32[2][512] calldata pubkeys
+        bytes32[2][512] memory pubkeys
     ) public pure returns (bytes32) {
         bytes32[512] memory pubkeyRoots;
         for (uint16 i = 0; i < 512; i++) {
@@ -44,28 +44,71 @@ contract LightClientValidator is ILightClientValidator {
         return nodes[510];
     }
 
+    function reverse(bytes32 input) internal pure returns (bytes32 v) {
+        v = input;
+
+        // swap bytes
+        v =
+            ((v &
+                0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00) >>
+                8) |
+            ((v &
+                0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) <<
+                8);
+
+        // swap 2-byte long pairs
+        v =
+            ((v &
+                0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000) >>
+                16) |
+            ((v &
+                0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) <<
+                16);
+
+        // swap 4-byte long pairs
+        v =
+            ((v &
+                0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000) >>
+                32) |
+            ((v &
+                0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) <<
+                32);
+
+        // swap 8-byte long pairs
+        v =
+            ((v &
+                0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000) >>
+                64) |
+            ((v &
+                0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) <<
+                64);
+
+        // swap 16-byte long pairs
+        v = (v >> 128) | (v << 128);
+    }
+
     function decodeBytes32(
         bytes32 hi,
         bytes32 lo
     ) public pure returns (bytes32) {
-        return (hi << 16) | lo;
+        return reverse((hi << 128) | lo);
     }
 
     function decodeBeacon(
         bytes32[8] memory data
     ) public pure returns (ILightClientStore.BeaconHeader memory) {
-        bytes32 parentRoot = decodeBytes32(data[0], data[1]);
-        bytes32 stateRoot = decodeBytes32(data[2], data[3]);
-        bytes32 bodyRoot = decodeBytes32(data[4], data[5]);
-        uint64 slot = uint64(uint256(data[6]));
-        uint64 propoerIndex = uint64(uint256(data[7]));
+        bytes32 parentRoot = decodeBytes32(data[2], data[3]);
+        bytes32 stateRoot = decodeBytes32(data[4], data[5]);
+        bytes32 bodyRoot = decodeBytes32(data[6], data[7]);
+        uint64 slot = uint64(uint256(data[0]));
+        uint64 propoerIndex = uint64(uint256(data[1]));
         return
             ILightClientStore.BeaconHeader(
+                slot,
+                propoerIndex,
                 parentRoot,
                 stateRoot,
-                bodyRoot,
-                slot,
-                propoerIndex
+                bodyRoot
             );
     }
 
@@ -103,7 +146,7 @@ contract LightClientValidator is ILightClientValidator {
          */
         require(
             nextSyncCommData.length == 13,
-            "expect the length of the next sync committee public data to be 19"
+            "expect the length of the next sync committee public data to be 13"
         );
 
         /**
@@ -138,7 +181,7 @@ contract LightClientValidator is ILightClientValidator {
 
         bytes32[8] memory finalizedBeaconData;
         for (uint8 i = 8; i < 16; i++) {
-            finalizedBeaconData[i] = finalityData[i];
+            finalizedBeaconData[i - 8] = finalityData[i];
         }
 
         ILightClientStore.BeaconHeader memory finalizedBeacon = decodeBeacon(
@@ -196,7 +239,7 @@ contract LightClientValidator is ILightClientValidator {
             );
 
         ILightClientStore.LightClientUpdate memory lcUpdate = ILightClientStore
-            .LightClientUpdate(lc.nextPubkeys, summary);
+            .LightClientUpdate(hashPubkeys(lc.nextPubkeys), summary);
 
         return (attestedBeacon, finalizedBeacon, lcUpdate);
     }
