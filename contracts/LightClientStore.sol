@@ -12,7 +12,6 @@ contract LightClientStore is ILightClientStore {
     uint16 public constant SLOTS_PER_PERIOD = 1 << 13;
     uint16 public constant SYNC_COMMITTEE_SIZE = 512;
 
-    uint64 public latestSlot;
     uint8 public syncCommitteesIndex;
     uint8 public bestValidUpdatesIndex;
     uint8 public maxActiveParticipantsIndex;
@@ -29,8 +28,19 @@ contract LightClientStore is ILightClientStore {
     event OptimisticHeaderUpdated(BeaconHeader newHeader);
     event FinalityHeaderUpdated(BeaconHeader newHeader);
 
-    constructor(ILightClientValidator _lcValidator) {
+    constructor(
+        ILightClientValidator _lcValidator,
+        BeaconHeader memory boostrapHeader,
+        bytes32 boostrapSyncCommitteeRoot
+    ) {
         lcValidator = _lcValidator;
+        setFinalizedHeader(boostrapHeader);
+        setOptimisticHeader(boostrapHeader);
+        syncCommittees[0] = SyncCommittee(
+            boostrapSyncCommitteeRoot,
+            slotToPeriod(boostrapHeader.slot)
+        );
+        syncCommitteesIndex = 1;
     }
 
     function slotToPeriod(uint64 slot) public pure returns (uint64) {
@@ -238,10 +248,6 @@ contract LightClientStore is ILightClientStore {
             update.summary.finalizedHeaderSlot == updatedfinalizedHeader.slot,
             "finalized header slots mismatch"
         );
-        require(
-            update.summary.signatureSlot <= latestSlot,
-            "the signature slot mustn't pass the latest slot"
-        );
         uint64 period = slotToPeriod(update.summary.signatureSlot);
         SyncCommittee memory syncCommittee = getAndUpdateSyncCommittee(period);
         // TO-DO: verify LC Update
@@ -271,5 +277,41 @@ contract LightClientStore is ILightClientStore {
         if (update.summary.isSyncCommitteeUpdate) {
             setBestValidUpdate(period, update);
         }
+    }
+
+    function queryCurrentMaxActiveParticipants()
+        external
+        view
+        returns (ActiveParticipants memory)
+    {
+        return
+            maxActiveParticipants[
+                (maxActiveParticipantsIndex + MAX_SYNC_PERIODS_CACHE - 1) %
+                    MAX_SYNC_PERIODS_CACHE
+            ];
+    }
+
+    function queryCurrentSyncCommitee()
+        external
+        view
+        returns (SyncCommittee memory)
+    {
+        return
+            syncCommittees[
+                (syncCommitteesIndex + MAX_SYNC_PERIODS_CACHE - 1) %
+                    MAX_SYNC_PERIODS_CACHE
+            ];
+    }
+
+    function queryCurrentBestValidUpdate()
+        external
+        view
+        returns (LightClientUpdate memory)
+    {
+        return
+            bestValidUpdates[
+                (bestValidUpdatesIndex + MAX_SYNC_PERIODS_CACHE - 1) %
+                    MAX_SYNC_PERIODS_CACHE
+            ];
     }
 }
