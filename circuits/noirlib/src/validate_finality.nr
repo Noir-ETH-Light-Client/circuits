@@ -15,12 +15,10 @@ fn validate_finality(
     
     assert(!utils::is_less_than(attested_beacon.slot, finalized_header.beacon.slot));
 
-    let fork_version = 3;
-
     assert(is_finality_update == is_branch_not_empty::is_branch_not_empty(finality_branch));
 
     if(is_finality_update){
-        validate_lc_header::validate_lc_header(fork_version, finalized_header);
+        validate_lc_header::validate_lc_header(finalized_header);
         let finality_root = hash_tree_root::hash_tree_root_beacon_header(finalized_header.beacon);
         validate_merkle_branch::validate_merkle_branch(attested_beacon.state_root, finality_root, 41, finality_branch);
     }

@@ -16,7 +16,7 @@ contract LightClientStore is ILightClientStore {
     uint8 public bestValidUpdatesIndex;
     uint8 public maxActiveParticipantsIndex;
 
-    bool public allowForceUpdate;
+    bool public allowForceUpdate = true;
 
     BeaconHeader public finalizeHeader;
     BeaconHeader public optimisticHeader;
@@ -192,13 +192,15 @@ contract LightClientStore is ILightClientStore {
                     isSafeLCUpdate(bestValidUpdates[i].summary) ||
                     allowForceUpdate
                 ) {
-                    syncCommittees[syncCommitteesIndex] = SyncCommittee(
+                    SyncCommittee memory syncCommittee = SyncCommittee(
                         bestValidUpdates[i].nextSyncCommitteeRoot,
                         period
                     );
+                    syncCommittees[syncCommitteesIndex] = syncCommittee;
                     syncCommitteesIndex =
                         (syncCommitteesIndex + 1) %
                         MAX_SYNC_PERIODS_CACHE;
+                    return syncCommittee;
                 }
             }
         }
@@ -249,8 +251,7 @@ contract LightClientStore is ILightClientStore {
             "finalized header slots mismatch"
         );
         uint64 period = slotToPeriod(update.summary.signatureSlot);
-        SyncCommittee memory syncCommittee = getAndUpdateSyncCommittee(period);
-        // TO-DO: verify LC Update
+        getAndUpdateSyncCommittee(period);
 
         uint16 activeParticipants = update.summary.activeParticipants;
         setMaxActiveParticipants(period, activeParticipants);

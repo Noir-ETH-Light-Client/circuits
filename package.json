@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-mocha -p tsconfig.json --timeout 1000000 --warnings=falses"
+    "test": "ts-mocha -p tsconfig.json --no-timeouts --warnings=falses"
   },
   "author": "",
   "license": "MIT",

@@ -23,11 +23,10 @@ fn validate_lc_update(
     ];
     
     assert(utils::is_less_than(attested_header.beacon.slot, signature_slot));
-        
+
+    validate_lc_header::validate_lc_header(attested_header);
+
     let fork_version = 3;
-
-    validate_lc_header::validate_lc_header(fork_version, attested_header); // error detected
-
     let domain = compute_domain::compute_domain(fork_version, GENESIS_VALIDATORS_ROOT);
     assert(signing_root.equal(compute_signing_root::compute_signing_root(attested_header.beacon, domain))); // error detected
 

@@ -2,7 +2,7 @@ import SyncCommittee from "../beacon/sync-committee.js";
 import LightClientBootstrap from "./lc-bootstrap.js";
 import LightClientHeader from "./lc-header.js";
 import LightClientUpdate from "./lc-update.js";
-import { slotToEpoch, slotToPeriod } from "../converter/time.js";
+import { slotToPeriod } from "../converter/time.js";
 import {
   MAX_SYNC_PERIODS_CACHE,
   SAFETY_THRESHOLD_FACTOR,
@@ -41,7 +41,7 @@ export default class LightClientStore {
     this.syncCommittees = new Map<number, SyncCommittee>();
     const slot = bootstrap.header.beacon.slot;
     this.syncCommittees.set(
-      slotToEpoch(Number(slot.bigInt)),
+      slotToPeriod(Number(slot.bigInt)),
       bootstrap.currentSyncCommittee
     );
     this.bestValidUpdates = new Map<number, LightClientUpdateWithSummary>();
@@ -89,15 +89,11 @@ export default class LightClientStore {
   }
 
   processLCUpdate(
-    currentSlot: number,
     lcUpdate: LightClientUpdate,
     isForceUpdate: boolean,
     genesisValidatorsRoot: Field
   ) {
     const signatureSlot = Number(lcUpdate.signatureSlot.bigInt);
-    if (currentSlot < signatureSlot) {
-      throw new Error("signature slot must be in the future");
-    }
     const updatePeriod = slotToPeriod(signatureSlot);
     const syncCommittee = this.getCommitteeAtPeriod(
       updatePeriod,
