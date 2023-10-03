@@ -56,3 +56,26 @@ export interface NoirSolidityProof {
   slicedProof: Uint8Array;
   publicInputs: Uint8Array[];
 }
+
+export * from "./primitives/field.js";
+export * from "./primitives/variable-length-field.js";
+export * from "./hash/hash-execution.js";
+export * from "./hash/hash-merkle-brach.js";
+export * from "./hash/hash-tree-root.js";
+export * from "./hash/hash-two.js";
+export * from "./domain/compute-domain.js";
+export * from "./berretenberg-api/index.js";
+export * from "./beacon-api/index.js";
+export * from "./beacon/beacon-header.js";
+export * from "./beacon/bls-pubkey.js";
+export * from "./beacon/bls-signature.js";
+export * from "./beacon/sync-committee.js";
+export * from "./constants/index.js";
+export * from "./converter/numeric.js";
+export * from "./converter/time.js";
+export * from "./light-client/is-better-lc-update.js";
+export * from "./light-client/lc-bootstrap.js";
+export * from "./light-client/lc-header.js";
+export * from "./light-client/lc-store.js";
+export * from "./light-client/lc-update.js";
+
