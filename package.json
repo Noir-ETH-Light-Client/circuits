@@ -1,9 +1,10 @@
 {
   "name": "eth-lc-lib",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "scripts": {
     "test": "ts-mocha -p tsconfig.json --no-timeouts --warnings=falses",
     "build": "tsc --project tsconfig.build.json",
@@ -15,6 +16,8 @@
     "ignore": [
       "src",
       "crs",
+      "contracts",
+      "circuits",
       "specs",
       ".eslintrc.cjs",
       ".husky",

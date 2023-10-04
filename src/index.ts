@@ -84,24 +84,27 @@ export interface NoirSolidityProof {
   publicInputs: Uint8Array[];
 }
 
-export * from "./primitives/field.js";
-export * from "./primitives/variable-length-field.js";
-export * from "./hash/hash-execution.js";
-export * from "./hash/hash-merkle-brach.js";
-export * from "./hash/hash-tree-root.js";
-export * from "./hash/hash-two.js";
-export * from "./domain/compute-domain.js";
-export * from "./berretenberg-api/index.js";
-export * from "./beacon-api/index.js";
-export * from "./beacon/beacon-header.js";
-export * from "./beacon/bls-pubkey.js";
-export * from "./beacon/bls-signature.js";
-export * from "./beacon/sync-committee.js";
-export * from "./constants/index.js";
-export * from "./converter/numeric.js";
-export * from "./converter/time.js";
-export * from "./light-client/is-better-lc-update.js";
-export * from "./light-client/lc-bootstrap.js";
-export * from "./light-client/lc-header.js";
-export * from "./light-client/lc-store.js";
-export * from "./light-client/lc-update.js";
+export { default as Field } from "./primitives/field.js";
+export { default as VariableLengthField } from "./primitives/variable-length-field.js";
+export { default as executionHashTreeRoot } from "./hash/hash-execution.js";
+export { default as hashMerkleBranch } from "./hash/hash-merkle-brach.js";
+export { default as hashTreeRoot } from "./hash/hash-tree-root.js";
+export { default as hashTwo } from "./hash/hash-two.js";
+export { default as computeDomain } from "./domain/compute-domain.js";
+export { validateWitness, generateProof } from "./berretenberg-api/index.js";
+export { default as BeaconAPI } from "./beacon-api/index.js";
+export { default as BeaconHeader } from "./beacon/beacon-header.js";
+export { default as BLSPubKey } from "./beacon/bls-pubkey.js";
+export { default as BLSSignature } from "./beacon/bls-signature.js";
+export { default as SyncCommittee } from "./beacon/sync-committee.js";
+export * as constants from "./constants/index.js";
+export * as numericConverter from "./converter/numeric.js";
+export * as timeConverter from "./converter/time.js";
+export {
+  isBetterUpdate,
+  isLightClientUpdateSafe,
+} from "./light-client/is-better-lc-update.js";
+export { default as LightClientBootstrap } from "./light-client/lc-bootstrap.js";
+export { default as LightClientHeader } from "./light-client/lc-header.js";
+export { default as LightClientStore } from "./light-client/lc-store.js";
+export { default as LightClientUpdate } from "./light-client/lc-update.js";
