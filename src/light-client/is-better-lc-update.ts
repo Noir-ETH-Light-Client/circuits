@@ -1,4 +1,4 @@
-import { slotToPeriod } from "src/converter/time";
+import { slotToPeriod } from "../converter/time.js";
 import { SYNC_COMMITTEE_SIZE } from "../constants/index.js";
 import { LightClientUpdateSummary } from "../index.js";
 

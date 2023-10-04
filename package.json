@@ -1,11 +1,30 @@
 {
-  "name": "eth-lc-circuits",
-  "version": "1.0.0",
+  "name": "eth-lc-lib",
+  "version": "0.0.1",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-mocha -p tsconfig.json --timeout 1000000 --warnings=falses"
+    "test": "ts-mocha -p tsconfig.json --no-timeouts --warnings=falses",
+    "build": "tsc --project tsconfig.build.json",
+    "prepare": "npm run build",
+    "prepack": "npmignore --auto .npmignore"
+  },
+  "publishConfig": {
+    "access": "public",
+    "ignore": [
+      "src",
+      "crs",
+      "specs",
+      ".eslintrc.cjs",
+      ".husky",
+      ".mocharc.cjs",
+      ".prettierrc",
+      ".vscode/settings.json",
+      "tsconfig.build.json",
+      "tsconfig.json",
+      "compile.sh"
+    ]
   },
   "author": "",
   "license": "MIT",
@@ -19,10 +38,12 @@
     "js-sha256": "^0.10.1"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.16.14",
     "chai": "^4.3.7",
+    "hardhat": "^2.17.3",
     "mocha": "^10.2.0",
     "npmignore": "^0.3.0",
     "ts-mocha": "^10.0.0",

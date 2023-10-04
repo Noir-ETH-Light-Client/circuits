@@ -6,12 +6,60 @@ import { expect } from "chai";
 import { SYNC_COMMITTEE_SIZE } from "./constants/index.js";
 import Field from "./primitives/field.js";
 import LightClientUpdate from "./light-client/lc-update.js";
+import { ethers } from "ethers";
+import validateLCUpdateCircuit from "../circuits/main/validate_lc_update/target/validate_lc_update.json" assert { type: "json" };
+import validateFinalityCircuit from "../circuits/main/validate_finality/target/validate_finality.json" assert { type: "json" };
+import validateNextSyncCommCircuit from "../circuits/main/validate_next_sync_committee/target/validate_next_sync_committee.json" assert { type: "json" };
+import { generateProof } from "./berretenberg-api/index.js";
+import finalityArtifact from "../artifacts/contracts/noir-verifiers/validate_finality/plonk_vk.sol/UltraVerifier.json" assert { type: "json" };
+import nextSyncCommArtifact from "../artifacts/contracts/noir-verifiers/validate_next_sync_committee/plonk_vk.sol/UltraVerifier.json" assert { type: "json" };
+import lcUpdateArtifact from "../artifacts/contracts/noir-verifiers/validate_lc_update/plonk_vk.sol/UltraVerifier.json" assert { type: "json" };
 
 describe("test signature from beacon api", () => {
   let beaconAPI: BeaconAPI;
   let genesisValidatorsRoot: Field;
   let lcUpdates: any;
   const bootstrapFile = "bootstrap-state.json";
+  async function testWithContract(
+    witness: Map<number, string>,
+    circuitArtifact: any,
+    smartContractArtifact: any
+  ) {
+    const proof = await generateProof(witness, circuitArtifact);
+    const provider = ethers.getDefaultProvider("http://127.0.0.1:8545");
+    const wallet = new ethers.Wallet(
+      "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+      provider
+    );
+    const Verifier = new ethers.ContractFactory(
+      smartContractArtifact.abi,
+      smartContractArtifact.bytecode,
+      wallet
+    );
+    const verifier = await Verifier.deploy();
+
+    // @ts-ignore
+    await verifier.verify(proof.slicedProof, proof.publicInputs);
+  }
+  async function testFinality(lcUpdate: LightClientUpdate) {
+    const witness = lcUpdate.generateFinalityWitness();
+    await testWithContract(witness, validateFinalityCircuit, finalityArtifact);
+  }
+
+  async function testSyncComm(lcUpdate: LightClientUpdate) {
+    const witness = lcUpdate.generateNextSyncCommitteeWitness();
+    await testWithContract(
+      witness,
+      validateNextSyncCommCircuit,
+      nextSyncCommArtifact
+    );
+  }
+
+  async function testLCUpdate(lcUpdate: LightClientUpdate) {
+    const witness = lcUpdate.generateLCUpdateWitness(genesisValidatorsRoot);
+    await testWithContract(witness, validateLCUpdateCircuit, lcUpdateArtifact);
+  }
+
   before("download lc updates and genesis", async () => {
     beaconAPI = new BeaconAPI();
 
@@ -53,6 +101,10 @@ describe("test signature from beacon api", () => {
       genesisValidatorsRoot
     );
     expect(isLCValid.valid).to.be.true;
+
+    await testFinality(lcUpdate);
+    await testSyncComm(lcUpdate);
+    await testLCUpdate(lcUpdate);
   });
   it("test lc update 1", async () => {
     const previousUpdate = lcUpdates.data[0];
@@ -69,5 +121,9 @@ describe("test signature from beacon api", () => {
       genesisValidatorsRoot
     );
     expect(isLCValid.valid).to.be.true;
+
+    await testFinality(lcUpdate);
+    await testSyncComm(lcUpdate);
+    await testLCUpdate(lcUpdate);
   });
 });

@@ -1,4 +1,4 @@
-import Field from "../types/primitives/field.js";
+import Field from "../primitives/field.js";
 import { ExecutionPayloadHeaderObject } from "../index.js";
 import { ssz } from "@lodestar/types";
 

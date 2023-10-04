@@ -1,0 +1,9 @@
+[package]
+name = "hash_tree_root"
+type = "bin"
+authors = [""]
+compiler_version = "0.10.3"
+
+[dependencies]
+noirlib={path = "../../noirlib"}
+primitives = {path = "../../primitives"}

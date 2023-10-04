@@ -23,9 +23,24 @@ export default class SyncCommittee {
 
   get hashTreeRoot() {
     const aggregateKeyRoot = this._aggregateKey.hashTreeRoot;
-    const pubkeyRoots = this._pubKeys.map((pubkey) => pubkey.hashTreeRoot);
-    const pubkeysRoot = hashTreeRoot(pubkeyRoots);
+    const pubkeysRoot = this.pubkeysRoot;
     return hashTreeRoot([pubkeysRoot, aggregateKeyRoot]);
+  }
+
+  get pubkeysRoot() {
+    const pubkeyRoots = this._pubKeys.map((pubkey) => pubkey.hashTreeRoot);
+    return hashTreeRoot(pubkeyRoots);
+  }
+
+  get allRoots() {
+    const aggregateKeyRoot = this._aggregateKey.hashTreeRoot;
+    const pubkeysRoot = this.pubkeysRoot;
+
+    return {
+      aggregateKeyRoot,
+      pubkeysRoot,
+      hashTreeRoot: hashTreeRoot([pubkeysRoot, aggregateKeyRoot]),
+    };
   }
 
   getParticipantPubkeys(syncCommitteeBits: VariableLengthField) {

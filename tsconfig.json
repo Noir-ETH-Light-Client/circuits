@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
     "outDir": "./build",
     "paths": {
       "src/*": [
@@ -33,6 +32,8 @@
   ],
   "exclude": [
     "build",
+    "circuits",
+    "contracts",
     "node_modules"
   ]
 }

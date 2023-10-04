@@ -9,41 +9,41 @@ export function uint8ArrayToBigInt(uint8Array: Uint8Array): BigInt {
   return result;
 }
 
-export function bigIntToLEBytes(field: BigInt) {
+export function bigIntToLEBytes(field: BigInt, length = 32) {
   let curField = BigInt(field.valueOf());
 
-  let leBytes = new Array<BigInt>(32);
-  for (let i = 0; i < 32; i++) {
+  let leBytes = new Array<BigInt>(length);
+  for (let i = 0; i < length; i++) {
     leBytes[i] = curField % 256n;
     curField >>= 8n;
   }
   return leBytes;
 }
 
-export function leBytesToBigInt(leBytes: Array<BigInt>) {
+export function leBytesToBigInt(leBytes: Array<BigInt>, length = 32) {
   let bytes = [...leBytes];
-  if (bytes.length < 32) {
-    for (let i = bytes.length; i < 32; i++) {
+  if (bytes.length < length) {
+    for (let i = bytes.length; i < length; i++) {
       bytes.push(0n);
     }
   }
   let field = 0n;
   let mul2 = 1n;
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < length; i++) {
     field += mul2 * bytes[i].valueOf();
     mul2 <<= 8n;
   }
   return field;
 }
 
-export function bigIntToHilo(field: BigInt) {
-  let hi = BigInt(field.valueOf() >> 128n);
-  let lo = BigInt(field.valueOf() - (hi.valueOf() << 128n));
+export function bigIntToHilo(field: BigInt, bitsLength = 128) {
+  let hi = BigInt(field.valueOf() >> BigInt(bitsLength));
+  let lo = BigInt(field.valueOf() - (hi.valueOf() << BigInt(bitsLength)));
   return [hi, lo];
 }
 
-export function hiloToBigInt(hi: BigInt, lo: BigInt) {
-  return BigInt((hi.valueOf() << 128n) + lo.valueOf());
+export function hiloToBigInt(hi: BigInt, lo: BigInt, bitsLength = 128) {
+  return BigInt((hi.valueOf() << BigInt(bitsLength)) + lo.valueOf());
 }
 
 export function leBytesToUint8Array(leBytes: Array<BigInt>): Uint8Array {

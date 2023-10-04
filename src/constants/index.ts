@@ -36,7 +36,7 @@ export const CAPELLA_FORK_EPOCH = 194048; // April 12 (epoch: 194048    slot: 62
 
 // DENEB
 export const DENEB_FORK_VERSION = "0x04000000";
-export const DENEB_FORK_EPOCH = Number.MAX_VALUE;
+export const DENEB_FORK_EPOCH = Infinity;
 
 export const SECONDS_PER_SLOT = 12;
 export const SLOTS_PER_EPOCH = 32;
