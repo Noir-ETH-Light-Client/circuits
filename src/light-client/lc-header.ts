@@ -4,8 +4,8 @@ import {
   EXECUTION_PAYLOAD_INDEX,
 } from "../constants/index.js";
 import {
-  BeaconHeaderObject,
   ExecutionPayloadHeaderObject,
+  LightClientHeaderObject,
 } from "../index.js";
 import { slotToForkVersion } from "../converter/time.js";
 import executionHashTreeRoot from "../hash/hash-execution.js";
@@ -18,19 +18,31 @@ export default class LightClientHeader {
   private _execution?: ExecutionPayloadHeaderObject;
   private _executionBranch?: Array<Field>;
 
-  constructor(
-    beacon: BeaconHeaderObject,
-    execution?: ExecutionPayloadHeaderObject,
-    executionBranch?: Array<string>
-  ) {
-    if (executionBranch && executionBranch.length !== EXECUTION_PAYLOAD_DEPTH) {
+  constructor({
+    beacon,
+    execution,
+    execution_branch,
+  }: LightClientHeaderObject) {
+    if (
+      execution_branch &&
+      execution_branch.length !== EXECUTION_PAYLOAD_DEPTH
+    ) {
       throw new Error(
-        `Expect the execution branch length to be ${EXECUTION_PAYLOAD_DEPTH}, but got ${executionBranch.length}`
+        `Expect the execution branch length to be ${EXECUTION_PAYLOAD_DEPTH}, but got ${execution_branch.length}`
       );
     }
     this._beacon = new BeaconHeader(beacon);
     this._execution = execution;
-    this._executionBranch = executionBranch?.map((node) => Field.fromSSZ(node));
+    this._executionBranch = execution_branch?.map((node) =>
+      Field.fromSSZ(node)
+    );
+  }
+  get object(): LightClientHeaderObject {
+    return {
+      beacon: this._beacon.object,
+      execution: this._execution,
+      execution_branch: this._executionBranch?.map((e) => e.ssz),
+    };
   }
   get beacon() {
     return this._beacon;

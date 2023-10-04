@@ -6,6 +6,33 @@ export interface BeaconHeaderObject {
   body_root: string;
 }
 
+export interface LightClientUpdateObject {
+  attested_header: LightClientHeaderObject;
+  next_sync_committee: SyncCommitteeObject;
+  next_sync_committee_branch: string[];
+  finalized_header: LightClientHeaderObject;
+  finality_branch: string[];
+  sync_aggregate: {
+    sync_committee_bits: string;
+    sync_committee_signature: string;
+  };
+  signature_slot: string;
+}
+
+export interface LightClientStoreObject {
+  finalized_header: LightClientHeaderObject;
+  optimistic_header: LightClientHeaderObject;
+  sync_committees: Map<number, SyncCommitteeObject>;
+  best_valid_updates: Map<number, LightClientUpdateObject>;
+  max_active_participants: Map<number, number>;
+}
+
+export interface LightClientHeaderObject {
+  execution?: ExecutionPayloadHeaderObject;
+  execution_branch?: string[];
+  beacon: BeaconHeaderObject;
+}
+
 export interface SyncCommitteeObject {
   pubkeys: Array<string>;
   aggregate_pubkey: string;
@@ -78,4 +105,3 @@ export * from "./light-client/lc-bootstrap.js";
 export * from "./light-client/lc-header.js";
 export * from "./light-client/lc-store.js";
 export * from "./light-client/lc-update.js";
-

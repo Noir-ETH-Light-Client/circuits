@@ -122,7 +122,7 @@ describe("test signature from beacon api", () => {
       expect(nextSyncCommittee.pubKeys[i].ssz).to.be.equal(
         expectedNextSyncCommittee.pubKeys[i].ssz
       );
-    const lcUpdate = LightClientUpdate.fromJSON(update.data);
+    const lcUpdate = LightClientUpdate.fromObject(update.data);
     expect(lcUpdate.isFinalityUpdate()).to.be.false;
     expect(lcUpdate.isSyncCommitteeUpdate()).to.be.true;
     const isLCValid = lcUpdate.isValid(

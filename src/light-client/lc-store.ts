@@ -9,7 +9,12 @@ import {
   SYNC_COMMITTEE_SIZE,
 } from "../constants/index.js";
 import Field from "../primitives/field.js";
-import { LightClientUpdateSummary } from "../index.js";
+import {
+  LightClientStoreObject,
+  LightClientUpdateObject,
+  LightClientUpdateSummary,
+  SyncCommitteeObject,
+} from "../index.js";
 import {
   isBetterUpdate,
   isLightClientUpdateSafe,
@@ -35,19 +40,75 @@ export default class LightClientStore {
   private _optimisticHeader: LightClientHeader;
   readonly maxActiveParticipants: Map<number, number>;
 
-  constructor(bootstrap: LightClientBootstrap) {
-    this._finalizedHeader = bootstrap.header;
-    this._optimisticHeader = bootstrap.header;
-    this.syncCommittees = new Map<number, SyncCommittee>();
+  constructor(
+    syncCommittees: Map<number, SyncCommittee>,
+    bestValidUpdates: Map<number, LightClientUpdateWithSummary>,
+    finalizedHeader: LightClientHeader,
+    optimisticHeader: LightClientHeader,
+    maxActiveParticipants: Map<number, number>
+  ) {
+    this.syncCommittees = syncCommittees;
+    this.bestValidUpdates = bestValidUpdates;
+    this._finalizedHeader = finalizedHeader;
+    this._optimisticHeader = optimisticHeader;
+    this.maxActiveParticipants = maxActiveParticipants;
+  }
+  static bootstrap(bootstrap: LightClientBootstrap) {
+    const finalizedHeader = bootstrap.header;
+    const optimisticHeader = bootstrap.header;
+    const syncCommittees = new Map<number, SyncCommittee>();
     const slot = bootstrap.header.beacon.slot;
-    this.syncCommittees.set(
+    syncCommittees.set(
       slotToPeriod(Number(slot.bigInt)),
       bootstrap.currentSyncCommittee
     );
-    this.bestValidUpdates = new Map<number, LightClientUpdateWithSummary>();
-    this.maxActiveParticipants = new Map<number, number>();
+    const bestValidUpdates = new Map<number, LightClientUpdateWithSummary>();
+    const maxActiveParticipants = new Map<number, number>();
+    return new LightClientStore(
+      syncCommittees,
+      bestValidUpdates,
+      finalizedHeader,
+      optimisticHeader,
+      maxActiveParticipants
+    );
   }
 
+  static fromObject(object: LightClientStoreObject) {
+    const syncCommittees = new Map<number, SyncCommittee>();
+    object.sync_committees.forEach((value, key) =>
+      syncCommittees.set(key, new SyncCommittee(value))
+    );
+    const bestValidUpdates = new Map<number, LightClientUpdateWithSummary>();
+    object.best_valid_updates.forEach((value, key) => {
+      const update = LightClientUpdate.fromObject(value);
+      const summary = update.summary;
+      bestValidUpdates.set(key, { update, summary });
+    });
+    return new LightClientStore(
+      syncCommittees,
+      bestValidUpdates,
+      new LightClientHeader(object.finalized_header),
+      new LightClientHeader(object.optimistic_header),
+      object.max_active_participants
+    );
+  }
+  get object(): LightClientStoreObject {
+    const sync_committees = new Map<number, SyncCommitteeObject>();
+    this.syncCommittees.forEach((value, key) =>
+      sync_committees.set(key, value.object)
+    );
+    const best_valid_updates = new Map<number, LightClientUpdateObject>();
+    this.bestValidUpdates.forEach((value, key) =>
+      best_valid_updates.set(key, value.update.object)
+    );
+    return {
+      finalized_header: this._finalizedHeader.object,
+      optimistic_header: this._optimisticHeader.object,
+      max_active_participants: this.maxActiveParticipants,
+      sync_committees,
+      best_valid_updates,
+    };
+  }
   get finalizedHeader() {
     return this._finalizedHeader;
   }

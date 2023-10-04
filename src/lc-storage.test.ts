@@ -161,7 +161,7 @@ describe("test signature from beacon api", () => {
       bootstrapState.data.current_sync_committee,
       currentSyncCommitteeBranch
     );
-    lcStorage = new LightClientStore(bootstrap);
+    lcStorage = LightClientStore.bootstrap(bootstrap);
 
     const expectedFinalizedHeader = await lcStorageContract.finalizeHeader();
     checkHeadersMatch(
@@ -183,7 +183,7 @@ describe("test signature from beacon api", () => {
   it("process lc updates", async () => {
     for (let i = 0; i < contractData.length; i++) {
       const update = lcUpdates.data[i];
-      const lcUpdate = LightClientUpdate.fromJSON(update.data);
+      const lcUpdate = LightClientUpdate.fromObject(update.data);
 
       lcStorage.processLCUpdate(lcUpdate, true, genesisValidatorsRoot);
 

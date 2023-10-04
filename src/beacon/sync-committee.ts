@@ -13,6 +13,12 @@ export default class SyncCommittee {
     this._aggregateKey = BLSPubKey.fromSSZ(aggregate_pubkey);
   }
 
+  get object(): SyncCommitteeObject {
+    return {
+      pubkeys: this._pubKeys.map((key) => key.ssz),
+      aggregate_pubkey: this._aggregateKey.ssz,
+    };
+  }
   get pubKeys() {
     return this._pubKeys;
   }

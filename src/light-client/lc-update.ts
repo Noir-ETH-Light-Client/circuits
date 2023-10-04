@@ -16,6 +16,7 @@ import LightClientHeader from "./lc-header.js";
 import {
   InvalidLCMessage,
   IsLCUpdateValid,
+  LightClientUpdateObject,
   LightClientUpdateSummary,
 } from "../index.js";
 import computeDomain from "../domain/compute-domain.js";
@@ -70,21 +71,28 @@ export default class LightClientUpdate {
 
     this.syncCommitteeSignature = BLSSignature.fromSSZ(syncCommitteeSignature);
   }
-
-  static fromJSON(json: any) {
+  get object(): LightClientUpdateObject {
+    return {
+      signature_slot: this.signatureSlot.bigInt.toString(),
+      next_sync_committee: this.nextSyncCommittee.object,
+      next_sync_committee_branch: this.nextSyncCommitteeBranch.map(
+        (e) => e.ssz
+      ),
+      attested_header: this.attestedHeader.object,
+      finalized_header: this.attestedHeader.object,
+      finality_branch: this.finalityBranch.map((e) => e.ssz),
+      sync_aggregate: {
+        sync_committee_bits: this.syncCommitteeBits.ssz,
+        sync_committee_signature: this.syncCommitteeSignature.ssz,
+      },
+    };
+  }
+  static fromObject(json: LightClientUpdateObject) {
     const signatureSlot = json.signature_slot;
 
-    const attestedHeader = new LightClientHeader(
-      json.attested_header.beacon,
-      json.attested_header.execution,
-      json.attested_header.execution_branch
-    );
+    const attestedHeader = new LightClientHeader(json.attested_header);
 
-    const finalizedHeader = new LightClientHeader(
-      json.finalized_header.beacon,
-      json.finalized_header.execution,
-      json.finalized_header.execution_branch
-    );
+    const finalizedHeader = new LightClientHeader(json.finalized_header);
 
     const finalityBranch = json.finality_branch;
     const syncCommitteeBits = json.sync_aggregate.sync_committee_bits;

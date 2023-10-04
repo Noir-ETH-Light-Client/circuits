@@ -23,6 +23,16 @@ export default class BeaconHeader {
     this.bodyRoot = Field.fromSSZ(body_root);
   }
 
+  get object() {
+    return {
+      slot: this.slot.bigInt.toString(),
+      proposer_index: this.proposerIndex.bigInt.toString(),
+      parent_root: this.parentRoot.ssz,
+      state_root: this.stateRoot.ssz,
+      body_root: this.bodyRoot.ssz,
+    };
+  }
+
   get hashTreeRoot() {
     return hashTreeRoot([
       this.slot,
