@@ -23,9 +23,9 @@ import computeDomain from "../domain/compute-domain.js";
 import hashTwo from "../hash/hash-two.js";
 import executionHashTreeRoot from "../hash/hash-execution.js";
 import { convertToHexAndPad } from "../converter/numeric.js";
-import validateLCUpdateCircuit from "../../circuits/main/validate_lc_update/target/validate_lc_update.json" assert { type: "json" };
-import validateFinalityCircuit from "../../circuits/main/validate_finality/target/validate_finality.json" assert { type: "json" };
-import validateNextSyncCommCircuit from "../../circuits/main/validate_next_sync_committee/target/validate_next_sync_committee.json" assert { type: "json" };
+import validateLCUpdateCircuit from "../circuit-abis/validate_lc_update.json" assert { type: "json" };
+import validateFinalityCircuit from "../circuit-abis/validate_finality.json" assert { type: "json" };
+import validateNextSyncCommCircuit from "../circuit-abis/validate_next_sync_committee.json" assert { type: "json" };
 import { generateProof } from "../berretenberg-api/index.js";
 
 export default class LightClientUpdate {

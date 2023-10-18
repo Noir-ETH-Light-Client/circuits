@@ -76,35 +76,43 @@ export default class LightClientStore {
   static fromObject(object: LightClientStoreObject) {
     const syncCommittees = new Map<number, SyncCommittee>();
     object.sync_committees.forEach((value, key) =>
-      syncCommittees.set(key, new SyncCommittee(value))
+      syncCommittees.set(Number(key), new SyncCommittee(value))
     );
     const bestValidUpdates = new Map<number, LightClientUpdateWithSummary>();
     object.best_valid_updates.forEach((value, key) => {
       const update = LightClientUpdate.fromObject(value);
       const summary = update.summary;
-      bestValidUpdates.set(key, { update, summary });
+      bestValidUpdates.set(Number(key), { update, summary });
+    });
+    const maxActiveParticipants = new Map<number, number>();
+    object.max_active_participants.forEach((value, key) => {
+      maxActiveParticipants.set(Number(key), value);
     });
     return new LightClientStore(
       syncCommittees,
       bestValidUpdates,
       new LightClientHeader(object.finalized_header),
       new LightClientHeader(object.optimistic_header),
-      object.max_active_participants
+      maxActiveParticipants
     );
   }
   get object(): LightClientStoreObject {
-    const sync_committees = new Map<number, SyncCommitteeObject>();
+    const sync_committees = new Map<string, SyncCommitteeObject>();
     this.syncCommittees.forEach((value, key) =>
-      sync_committees.set(key, value.object)
+      sync_committees.set(key.toString(), value.object)
     );
-    const best_valid_updates = new Map<number, LightClientUpdateObject>();
+    const best_valid_updates = new Map<string, LightClientUpdateObject>();
     this.bestValidUpdates.forEach((value, key) =>
-      best_valid_updates.set(key, value.update.object)
+      best_valid_updates.set(key.toString(), value.update.object)
     );
+    const max_active_participants = new Map<string, number>();
+    this.maxActiveParticipants.forEach((value, key) => {
+      max_active_participants.set(key.toString(), value);
+    });
     return {
       finalized_header: this._finalizedHeader.object,
       optimistic_header: this._optimisticHeader.object,
-      max_active_participants: this.maxActiveParticipants,
+      max_active_participants,
       sync_committees,
       best_valid_updates,
     };

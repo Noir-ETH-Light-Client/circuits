@@ -22,9 +22,9 @@ export interface LightClientUpdateObject {
 export interface LightClientStoreObject {
   finalized_header: LightClientHeaderObject;
   optimistic_header: LightClientHeaderObject;
-  sync_committees: Map<number, SyncCommitteeObject>;
-  best_valid_updates: Map<number, LightClientUpdateObject>;
-  max_active_participants: Map<number, number>;
+  sync_committees: Map<string, SyncCommitteeObject>;
+  best_valid_updates: Map<string, LightClientUpdateObject>;
+  max_active_participants: Map<string, number>;
 }
 
 export interface LightClientHeaderObject {
