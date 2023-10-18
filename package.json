@@ -9,7 +9,8 @@
     "test": "ts-mocha -p tsconfig.json --no-timeouts --warnings=falses",
     "build": "tsc --project tsconfig.build.json",
     "prepare": "npm run build",
-    "prepack": "npmignore --auto .npmignore"
+    "prepack": "npmignore --auto .npmignore",
+    "deploy": "ts-node --esm src/deploy/index.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -38,6 +39,7 @@
     "@lodestar/types": "^1.11.1",
     "@noir-lang/acvm_js": "git+https://git@github.com/noir-lang/acvm-simulator-wasm.git#b9d9ca9dfc5140839f23998d9466307215607c42",
     "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
     "fflate": "^0.8.0",
     "js-sha256": "^0.10.1"
   },
