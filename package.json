@@ -10,7 +10,8 @@
     "build": "tsc --project tsconfig.build.json",
     "prepare": "npm run build",
     "prepack": "npmignore --auto .npmignore",
-    "deploy": "ts-node --esm src/deploy/index.ts"
+    "deploy": "ts-node --esm src/deploy/index.ts",
+    "redeploy": "ts-node --esm src/deploy/redeploy-lc-store.ts"
   },
   "publishConfig": {
     "access": "public",

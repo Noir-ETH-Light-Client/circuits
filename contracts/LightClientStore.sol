@@ -27,6 +27,7 @@ contract LightClientStore is ILightClientStore {
 
     event OptimisticHeaderUpdated(BeaconHeader newHeader);
     event FinalityHeaderUpdated(BeaconHeader newHeader);
+    event LCUpdateSynced(LightClientUpdateSummary summary);
 
     constructor(
         ILightClientValidator _lcValidator,
@@ -242,6 +243,7 @@ contract LightClientStore is ILightClientStore {
             BeaconHeader memory updatedfinalizedHeader,
             LightClientUpdate memory update
         ) = lcValidator.validateLCUpdate(lc);
+
         require(
             update.summary.attestedHeaderSlot == attestedHeader.slot,
             "attested header slots mismatch"
@@ -278,6 +280,8 @@ contract LightClientStore is ILightClientStore {
         if (update.summary.isSyncCommitteeUpdate) {
             setBestValidUpdate(period, update);
         }
+
+        emit LCUpdateSynced(update.summary);
     }
 
     function queryCurrentMaxActiveParticipants()
