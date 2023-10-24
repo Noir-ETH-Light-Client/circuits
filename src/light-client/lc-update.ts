@@ -79,7 +79,7 @@ export default class LightClientUpdate {
         (e) => e.ssz
       ),
       attested_header: this.attestedHeader.object,
-      finalized_header: this.attestedHeader.object,
+      finalized_header: this.finalizedHeader.object,
       finality_branch: this.finalityBranch.map((e) => e.ssz),
       sync_aggregate: {
         sync_committee_bits: this.syncCommitteeBits.ssz,
